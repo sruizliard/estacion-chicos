@@ -1,30 +1,293 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="de">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>MatheBase</title>
+<title>MatheBase v3</title>
 <style>
-  body {
-    margin: 0; min-height: 100vh;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    background: #fdf6e9; color: #2b2a33;
-    font-family: "DejaVu Sans", "Noto Sans", sans-serif; text-align: center; padding: 24px;
-  }
-  .icon { font-size: 90px; }
-  h1 { font-size: 44px; margin: 10px 0; }
-  p { font-size: 24px; color: #6b6878; margin: 0 0 30px; }
-  a {
-    font-size: 26px; font-weight: bold; text-decoration: none; color: #fff;
-    background: #e4572e; padding: 16px 34px; border-radius: 18px;
-    box-shadow: 0 6px 0 rgba(0,0,0,.18);
-  }
+:root{--bg:#f4f7fb;--card:#fff;--ink:#1a2332;--muted:#5a6a7a;--accent:#2f6fed;--ok:#1f9d55;--bad:#d64545;--warn:#e6a700;--kueche:#7c3aed;--radius:16px;--btn-h:56px}
+*{box-sizing:border-box}html,body{margin:0;padding:0;height:100%;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);font-size:24px;line-height:1.35}
+body{display:flex;flex-direction:column;min-height:100%}
+header{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--card);border-bottom:2px solid #e2e8f0;min-height:64px}
+header .title{font-weight:700;font-size:26px;flex:1}header .meta{font-size:20px;color:var(--muted)}
+main{flex:1;padding:16px;max-width:900px;width:100%;margin:0 auto}
+.screen{display:none}.screen.active{display:block}
+.row{display:flex;flex-wrap:wrap;gap:12px;align-items:center}.stack{display:flex;flex-direction:column;gap:14px}
+.card{background:var(--card);border-radius:var(--radius);padding:18px;box-shadow:0 2px 10px rgba(26,35,50,.08)}
+h1{font-size:28px;margin:0 0 8px}h2{font-size:24px;margin:0 0 8px}p{margin:0 0 10px}.muted{color:var(--muted);font-size:20px}
+button,.btn{appearance:none;border:none;cursor:pointer;min-height:var(--btn-h);min-width:56px;padding:12px 18px;border-radius:14px;font-size:22px;font-weight:700;background:var(--accent);color:#fff;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+button:active{transform:scale(.98)}button.secondary{background:#e8eef8;color:var(--ink)}button.ok{background:var(--ok)}button.bad{background:var(--bad)}button.warn{background:var(--warn);color:#1a2332}button.kueche{background:var(--kueche)}
+button.big{width:100%;min-height:72px;font-size:26px}button:disabled{opacity:.45;cursor:not-allowed}
+input[type=text],input[type=password],input[type=number],select{min-height:var(--btn-h);font-size:24px;padding:10px 14px;border:2px solid #c9d4e3;border-radius:12px;width:100%;background:#fff;color:var(--ink)}
+label{display:block;font-size:20px;color:var(--muted);margin-bottom:6px}.field{margin-bottom:12px}
+.profiles{display:grid;grid-template-columns:1fr 1fr;gap:14px}@media(max-width:700px){.profiles{grid-template-columns:1fr}}
+.profile-btn{width:100%;min-height:120px;flex-direction:column;background:#eef4ff;color:var(--ink);border:3px solid #c5d6f7}
+.profile-btn .name{font-size:28px}.profile-btn .klasse{font-size:20px;color:var(--muted);font-weight:600}
+.exercise-q{font-size:48px;font-weight:800;text-align:center;padding:24px 8px}
+.progress{display:flex;gap:8px;justify-content:center;margin:8px 0 16px}
+.dot{width:18px;height:18px;border-radius:50%;background:#d0d8e4}.dot.on{background:var(--accent)}.dot.ok{background:var(--ok)}.dot.bad{background:var(--bad)}
+.feedback{text-align:center;font-size:28px;font-weight:800;min-height:40px;margin:8px 0}.feedback.ok{color:var(--ok)}.feedback.bad{color:var(--bad)}
+.answer-row{display:flex;gap:10px}.answer-row input{flex:1;text-align:center;font-size:32px;font-weight:700}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.stat{background:#eef4ff;border-radius:12px;padding:12px;text-align:center}.stat .n{font-size:30px;font-weight:800}.stat .l{font-size:20px;color:var(--muted)}
+.banner{background:linear-gradient(135deg,#ede9fe,#dbeafe);border:2px solid #c4b5fd;border-radius:14px;padding:14px;font-size:22px}
+.banner strong{color:var(--kueche)}.hidden{display:none!important}
+.pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:280px;margin:0 auto}
+.pin-pad button{font-size:28px;min-height:64px}.pin-dots{text-align:center;font-size:36px;letter-spacing:10px;margin:12px 0}
+.bar{height:18px;background:#e2e8f0;border-radius:999px;overflow:hidden;margin-top:8px}.bar>i{display:block;height:100%;background:var(--kueche);width:0%}
+.chip{display:inline-block;background:#fff7d6;border:2px solid #e6a700;border-radius:999px;padding:8px 16px;font-size:22px;font-weight:700;margin-top:10px}
+.topic{text-align:center;font-size:20px;color:var(--muted);font-weight:700}.exercise-q.long{font-size:28px;line-height:1.3}
+.tip{background:#fff7d6;border:2px solid #e6a700;border-radius:14px;padding:12px;font-size:22px}
+.medals{display:flex;justify-content:space-between;font-size:20px;margin-top:6px}
+#confetti{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:50}#confetti span{position:absolute;top:-40px;font-size:36px;animation:fall 2.6s ease-in forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(360deg)}}
 </style>
 </head>
 <body>
-  <div class="icon">🚧</div>
-  <h1>MatheBase kommt bald!</h1>
-  <p>Papa baut gerade dein Übungsprogramm.</p>
-  <a href="/">← Zurück</a>
+<header>
+  <a class="btn secondary" href="/" style="min-width:auto;padding:10px 14px;font-size:20px;">← Zurück</a>
+  <div class="title" id="hdrTitle">MatheBase</div>
+  <div class="meta" id="hdrMeta"></div>
+</header>
+<div id="confetti" class="hidden"></div>
+<main>
+<section id="screen-profiles" class="screen active"><div class="stack">
+  <div class="card"><h1>Wer übt heute?</h1><p class="muted">Mathe zählt für die Küche: «Lesen oder Üben».</p><div class="profiles" id="profileList"></div></div>
+  <button type="button" class="secondary" id="btnPapaFromStart">Papa / Mama</button>
+</div></section>
+
+<section id="screen-hub" class="screen"><div class="stack">
+  <div class="card">
+    <h1 id="hubHello">Hallo!</h1>
+    <div class="stats" style="margin-top:12px;">
+      <div class="stat"><div class="n" id="statPoints">0</div><div class="l">Mathe-Punkte</div></div>
+      <div class="stat"><div class="n" id="statStreak">0</div><div class="l">Serie</div></div>
+      <div class="stat"><div class="n" id="statKueche">–</div><div class="l">Küche heute</div></div>
+    </div>
+    <div id="hubKuecheBanner" class="banner hidden" style="margin-top:12px;"></div>
+    <div id="hubChip" class="chip hidden"></div>
+    <div style="margin-top:12px"><p class="muted" id="hubWeek" style="margin:0"></p><div class="bar"><i id="hubBar"></i></div>
+    <p class="muted" style="margin-top:8px">Küche: alle Gewohnheiten zusammen → 🥉 Bronze 10 · 🥈 Silber 15 · 🥇 Gold 20 Punkte. Mathe schaltet «Lesen oder Üben» frei.</p></div>
+  </div>
+  <button type="button" class="big" id="btnStartRound">Mathe · 5 Aufgaben</button>
+  <p class="muted">Richtig: +10. Alle 5 richtig: +20. Serie: +5. Ab 4 Richtigen: Küchenpunkt «Lesen/Üben». MatheBase merkt sich, was noch schwer ist, und übt es öfter.</p>
+  <div class="row">
+    <button type="button" class="secondary" id="btnSwitch">Anderes Profil</button>
+    <button type="button" class="secondary" id="btnPapaFromHub">Papa / Mama</button>
+  </div>
+</div></section>
+
+<section id="screen-ex" class="screen"><div class="card stack">
+  <div class="progress" id="exProgress"></div>
+  <div class="topic" id="exTopic"></div>
+  <div class="exercise-q" id="exQuestion">1 + 1 = ?</div>
+  <div class="feedback" id="exFeedback"></div>
+  <div class="tip hidden" id="exTip"></div>
+  <div class="answer-row">
+    <input id="exAnswer" type="number" inputmode="numeric" autocomplete="off" aria-label="Antwort">
+    <button type="button" id="btnCheck">OK</button>
+  </div>
+  <button type="button" class="secondary" id="btnHint">Hilfe 🤔</button>
+  <button type="button" class="big hidden" id="btnNext">Weiter →</button>
+</div></section>
+
+<section id="screen-end" class="screen"><div class="card stack">
+  <h1>Fertig!</h1>
+  <p id="endSummary"></p>
+  <div id="endKueche" class="banner hidden"></div>
+  <div class="stats">
+    <div class="stat"><div class="n" id="endRoundPts">0</div><div class="l">Diese Runde</div></div>
+    <div class="stat"><div class="n" id="endTotal">0</div><div class="l">Mathe gesamt</div></div>
+    <div class="stat"><div class="n" id="endStreak">0</div><div class="l">Serie</div></div>
+  </div>
+  <button type="button" class="big" id="btnAgain">Noch eine Runde</button>
+  <button type="button" class="secondary big" id="btnToHub">Zur Übersicht</button>
+</div></section>
+
+<section id="screen-pin" class="screen"><div class="card stack">
+  <h1>Papa / Mama</h1><p class="muted">PIN eingeben</p>
+  <div class="pin-dots" id="pinDots">····</div>
+  <div class="pin-pad" id="pinPad"></div>
+  <button type="button" class="secondary" id="btnPinCancel">Abbrechen</button>
+</div></section>
+
+<section id="screen-papa" class="screen"><div class="stack">
+  <div class="card"><h1>Einstellungen</h1><p class="muted">Profile ↔ Küchen-Kinder.</p></div>
+  <div class="card" id="papaProfiles"></div>
+  <div class="card">
+    <h2>Küche / Sync</h2>
+    <p class="muted" id="syncStatus">–</p>
+    <button type="button" class="kueche" id="btnFlush">Ausstehende Küchenpunkte senden</button>
+    <pre id="exportBox" class="muted" style="font-size:14px;white-space:pre-wrap;word-break:break-all;margin-top:10px;"></pre>
+  </div>
+  <div class="card">
+    <h2>PIN / Namen ändern</h2>
+    <p class="muted">Am Chromebook als Admin im Terminal: <code>sudo estacion-config</code></p>
+  </div>
+  <div class="card">
+    <h2>Daten</h2>
+    <div class="row">
+      <button type="button" class="secondary" id="btnExport">Export JSON</button>
+      <button type="button" class="warn" id="btnResetDay">Heute zurücksetzen</button>
+      <button type="button" class="bad" id="btnResetAll">Alles löschen</button>
+    </div>
+  </div>
+  <button type="button" class="secondary big" id="btnPapaDone">Fertig</button>
+</div></section>
+</main>
+<script>
+/*ENGINE-START*/
+var ENGINE=(function(){
+var R=Math.random;
+function ri(a,b){return Math.floor(R()*(b-a+1))+a;}
+function pick(a){return a[Math.floor(R()*a.length)];}
+function ex(topic,prompt,answer,hint,difficulty){return{topic:topic,prompt:prompt,answer:answer,hint:hint||"",difficulty:difficulty||1};}
+// ---- Klasse 2: nur + / −, Zahlen ≤ 20 (BW GS Kl.1/2, K2-ZO-1..4) ----
+var K2=[
+ {id:"plus",name:"Plus bis 20",tip:"Erst bis zur 10 auffüllen, dann den Rest dazu. Beispiel: 8 + 5 = 8 + 2 + 3.",gen:function(d){var a=ri(1,d<2?9:15),b=ri(1,Math.min(d<2?10-a:20-a,9));if(b<1)b=1;if(a+b>20)b=20-a;return ex("plus",a+" + "+b+" = ?",a+b,"Zähle von "+a+" aus weiter.",d);}},
+ {id:"minus",name:"Minus bis 20",tip:"Erst bis zur 10 zurück, dann weiter. Beispiel: 13 − 5 = 13 − 3 − 2.",gen:function(d){var a=ri(d<2?3:11,d<2?10:20),b=ri(1,Math.min(a,9));return ex("minus",a+" − "+b+" = ?",a-b,"Geh von "+a+" rückwärts.",d);}},
+ {id:"zehnerueber",name:"Über die 10",tip:"Zerlege die zweite Zahl so, dass du genau die 10 erreichst.",gen:function(d){if(R()<0.5){var a=ri(6,9),b=ri(11-a,9);return ex("zehnerueber",a+" + "+b+" = ?",a+b,"Wie viel fehlt von "+a+" bis 10?",d);}var c=ri(11,18),e=ri(c-9,9);return ex("zehnerueber",c+" − "+e+" = ?",c-e,"Erst bis zur 10, dann weiter.",d);}},
+ {id:"ergaenzen",name:"Ergänzen",tip:"Frage dich: Wie viel fehlt noch bis zur Zielzahl? Rechne Ziel minus Start.",gen:function(d){var t=d<2?10:ri(11,20),a=ri(1,t-1);return ex("ergaenzen",a+" + __ = "+t,t-a,"Zähle von "+a+" bis "+t+".",d);}},
+ {id:"verdoppeln",name:"Verdoppeln",tip:"Verdoppeln heißt: die Zahl plus dieselbe Zahl. 6 doppelt = 6 + 6.",gen:function(d){var a=ri(1,d<2?5:10);return ex("verdoppeln","Verdopple "+a+": "+a+" + "+a+" = ?",a+a,"Zweimal die gleiche Zahl.",d);}},
+ {id:"halbieren",name:"Halbieren",tip:"Halbieren heißt: in zwei gleiche Teile teilen. Welche Zahl plus sich selbst ergibt die Zahl?",gen:function(d){var h=ri(1,d<2?5:10);return ex("halbieren","Die Hälfte von "+(2*h)+" ist ?",h,"Welche Zahl + gleiche Zahl = "+(2*h)+"?",d);}},
+ {id:"reihenfolge",name:"Zahlen-Reihenfolge",tip:"Stell dir den Zahlenstrahl vor: Nachbarzahlen sind 1 davor oder 1 danach.",gen:function(d){var a=ri(2,18),k=ri(0,2);if(k===0)return ex("reihenfolge","Welche Zahl kommt nach "+a+"?",a+1,"Eins mehr.",d);if(k===1)return ex("reihenfolge","Welche Zahl kommt vor "+a+"?",a-1,"Eins weniger.",d);var s=ri(2,14);return ex("reihenfolge","Zähle in 2er-Schritten: "+s+", "+(s+2)+", "+(s+4)+", __",s+6,"Immer 2 mehr.",d);}}
+];
+// ---- Klasse 4/5: Einmaleins, Division, Stellenwert, ZR 1000, Sachaufgaben; % gesperrt ----
+var K5=[
+ {id:"einmaleins",name:"Einmaleins",tip:"Nutze Kernaufgaben: 7 · 8 = 5 · 8 + 2 · 8 = 40 + 16.",gen:function(d){var a=ri(d<2?2:3,10),b=ri(2,10);return ex("einmaleins",a+" · "+b+" = ?",a*b,"Denk an "+Math.min(a,5)+" · "+b+" und rechne weiter.",d);}},
+ {id:"division",name:"Geteilt",tip:"Geteilt ist die Umkehr vom Mal: 56 : 8 = ? → Welche Zahl mal 8 ergibt 56?",gen:function(d){var b=ri(2,10),q=ri(2,d<3?10:12);return ex("division",(b*q)+" : "+b+" = ?",q,"Welche Zahl · "+b+" = "+(b*q)+"?",d);}},
+ {id:"stellenwert",name:"Stellenwert",tip:"H = Hunderter, Z = Zehner, E = Einer. 3 H 4 Z 7 E = 300 + 40 + 7 = 347.",gen:function(d){var h=ri(1,9),z=ri(0,9),e=ri(0,9),n=100*h+10*z+e;if(R()<0.5)return ex("stellenwert",h+" H + "+z+" Z + "+e+" E = ?",n,"Hunderter · 100, Zehner · 10.",d);return ex("stellenwert","Wie viele Zehner hat "+n+" an der Zehnerstelle?",z,"Die mittlere Ziffer.",d);}},
+ {id:"zr1000plus",name:"Plus bis 1000",tip:"Rechne stellenweise: erst Hunderter, dann Zehner, dann Einer.",gen:function(d){var a=ri(100,d<2?400:700),b=ri(d<2?10:50,Math.min(999-a,d<2?99:299));return ex("zr1000plus",a+" + "+b+" = ?",a+b,"Zerlege "+b+" in Hunderter, Zehner, Einer.",d);}},
+ {id:"zr1000minus",name:"Minus bis 1000",tip:"Zieh erst die Hunderter ab, dann die Zehner, dann die Einer.",gen:function(d){var a=ri(200,999),b=ri(d<2?10:50,Math.min(a-1,d<2?99:299));return ex("zr1000minus",a+" − "+b+" = ?",a-b,"Schritt für Schritt abziehen.",d);}},
+ {id:"halbschriftlich",name:"Mal mit großen Zahlen",tip:"Zerlege: 23 · 4 = 20 · 4 + 3 · 4 = 80 + 12.",gen:function(d){var a=ri(11,d<2?25:49),b=ri(2,d<2?5:9);return ex("halbschriftlich",a+" · "+b+" = ?",a*b,"Zehner und Einer getrennt malnehmen.",d);}},
+ {id:"sachaufgabe",name:"Sachaufgaben",tip:"Lies genau: Was ist gegeben? Was ist gefragt? Welche Rechnung passt?",gen:function(d){var k=ri(0,3),a,b;
+  if(k===0){a=ri(3,9);b=ri(2,8);return ex("sachaufgabe","Ein Heft kostet "+a+" €. Du kaufst "+b+" Hefte. Wie viel € zahlst du?",a*b,"Preis · Anzahl.",d);}
+  if(k===1){b=ri(2,6);a=b*ri(3,9);return ex("sachaufgabe",a+" Bonbons werden gerecht an "+b+" Kinder verteilt. Wie viele bekommt jedes Kind?",a/b,"Teilen: "+a+" : "+b+".",d);}
+  if(k===2){a=ri(200,480);b=ri(30,150);return ex("sachaufgabe","Die Schule hat "+a+" Kinder, "+b+" sind auf Ausflug. Wie viele sind in der Schule?",a-b,"Minus rechnen.",d);}
+  a=ri(2,5);return ex("sachaufgabe","Eine Stunde hat 60 Minuten. Wie viele Minuten sind "+a+" Stunden?",60*a,"60 · "+a+".",d);}},
+ {id:"prozent",name:"Prozent",locked:true,tip:"10 % ist ein Zehntel: teile durch 10. 50 % ist die Hälfte.",gen:function(d){var base=pick([20,50,100,200,300,400,500]),p=pick([10,50,25]);if(p===25&&base%4)p=10;return ex("prozent",p+" % von "+base+" = ?",base*p/100,"",d);}}
+];
+function bank(klasse,opts){var src=klasse<=2?K2:K5;return src.filter(function(t){return !t.locked||(opts&&opts.prozent);});}
+function topicById(id){var all=K2.concat(K5);for(var i=0;i<all.length;i++)if(all[i].id===id)return all[i];return null;}
+function weightedPick(list,w){var s=0,i;for(i=0;i<list.length;i++)s+=w[list[i]];var r=R()*s;for(i=0;i<list.length;i++){r-=w[list[i]];if(r<=0)return list[i];}return list[list.length-1];}
+var WEAK_SHARE=0.6,ROUND=5,W_WRONG=1,W_CAP=6,DECAY=0.8,W_MIN=0.25;
+function weakList(profile,allowed){var w=profile.weakTopics||{},ids=allowed.map(function(t){return t.id;});return ids.filter(function(id){return (w[id]||0)>=W_MIN;});}
+function makeRound(profile,opts){
+ var allowed=bank(profile.klasse,opts),weak=weakList(profile,allowed),items=[],seen={},w=profile.weakTopics||{};
+ for(var n=0;n<ROUND;n++){var tries=0,e;do{
+   var useWeak=weak.length&&R()<WEAK_SHARE,id=useWeak?weightedPick(weak,w):pick(allowed).id,t=topicById(id);
+   // schwache Themen leichter (Erfolgserlebnis), starke Themen schwerer
+   var diff=useWeak?((w[id]||0)>2?1:2):ri(1,3);
+   e=t.gen(diff);e.fromWeak=!!useWeak;tries++;}while(seen[e.prompt]&&tries<10);
+  seen[e.prompt]=1;items.push(e);}
+ return items;}
+function record(profile,item,given,ok,dateStr){
+ profile.weakTopics=profile.weakTopics||{};profile.topicStats=profile.topicStats||{};profile.mistakes=profile.mistakes||[];
+ var w=profile.weakTopics,s=profile.topicStats[item.topic]||(profile.topicStats[item.topic]={seen:0,wrong:0});s.seen++;
+ if(ok){if(w[item.topic]){w[item.topic]=Math.round(w[item.topic]*DECAY*100)/100;if(w[item.topic]<W_MIN)delete w[item.topic];}}
+ else{s.wrong++;w[item.topic]=Math.min(W_CAP,(w[item.topic]||0)+W_WRONG);profile.mistakes.push({d:dateStr||"",topic:item.topic,prompt:item.prompt,given:given,answer:item.answer});if(profile.mistakes.length>40)profile.mistakes.splice(0,profile.mistakes.length-40);}}
+function topWeak(profile,k){var w=profile.weakTopics||{};return Object.keys(w).sort(function(a,b){return w[b]-w[a];}).slice(0,k||5).map(function(id){var t=topicById(id);return{id:id,name:t?t.name:id,weight:w[id]};});}
+function validK2(e){return !/[·×÷%]|\d :/.test(e.prompt)&&(e.prompt.match(/\d+/g)||[]).every(function(x){return +x<=20;})&&e.answer>=0&&e.answer<=20;}
+return{K2:K2,K5:K5,bank:bank,topicById:topicById,makeRound:makeRound,record:record,topWeak:topWeak,validK2:validK2,ROUND:ROUND};
+})();
+if(typeof module!=="undefined")module.exports=ENGINE;
+/*ENGINE-END*/
+
+(function(){
+"use strict";
+var E=ENGINE,STORAGE_KEY="mathebase.v3",SCHEMA=3,DEFAULT_PIN="",ROUND_SIZE=E.ROUND,MIN_FOR_KUECHE=4,PTS_OK=10,PTS_BONUS=20,PTS_STREAK=5;
+var KIDS=[],state=null,activeId=null,round=null,pinBuffer="",returnAfterPapa="profiles";
+function $(id){return document.getElementById(id);}
+function fmt(d){var m=String(d.getMonth()+1),day=String(d.getDate());if(m.length<2)m="0"+m;if(day.length<2)day="0"+day;return d.getFullYear()+"-"+m+"-"+day;}
+function todayStr(){return fmt(new Date());}
+function yesterdayStr(){var d=new Date();d.setDate(d.getDate()-1);return fmt(d);}
+function weekStart(){var d=new Date(),wd=(d.getDay()+6)%7;d.setDate(d.getDate()-wd);return fmt(d);}
+function upgradeProfile(p){var dflt={kitchenId:"",points:0,streak:0,lastDay:"",todayPoints:0,todayDate:"",roundsToday:0,kuecheDate:"",kuechePending:false,weakTopics:{},topicStats:{},mistakes:[],kuecheDays:[],kuecheStreak:0,lastKuecheDay:"",prozent:false,rounds:[]};for(var k in dflt)if(!(k in p))p[k]=dflt[k];if(p.klasse>2)p.klasse=4;return p;}
+function defaultState(){return{schema:SCHEMA,pin:DEFAULT_PIN,profiles:[upgradeProfile({id:"p1",name:"Profil A",klasse:2}),upgradeProfile({id:"p2",name:"Profil B",klasse:4})]};}
+function load(){try{var raw=localStorage.getItem(STORAGE_KEY);
+  if(!raw){var old=localStorage.getItem("mathebase.v2")||localStorage.getItem("mathebase.v1");
+   if(old){state=JSON.parse(old);state.migratedFrom=localStorage.getItem("mathebase.v2")?2:1;state.migratedAt=todayStr();}else state=defaultState();}
+  else state=JSON.parse(raw);
+  if(!state.profiles||state.profiles.length<2)state=defaultState();
+  state.schema=SCHEMA;if(!state.pin)state.pin=DEFAULT_PIN;state.profiles.forEach(upgradeProfile);
+ }catch(e){state=defaultState();}refreshTodayCounters();save();}
+function save(){localStorage.setItem(STORAGE_KEY,JSON.stringify(state));}
+function refreshTodayCounters(){var t=todayStr();state.profiles.forEach(function(p){if(p.todayDate!==t){p.todayPoints=0;p.todayDate=t;p.roundsToday=0;}});}
+function getProfile(id){for(var i=0;i<state.profiles.length;i++)if(state.profiles[i].id===id)return state.profiles[i];return null;}
+function show(id){var s=document.querySelectorAll(".screen");for(var i=0;i<s.length;i++)s[i].classList.remove("active");$(id).classList.add("active");window.scrollTo(0,0);}
+function setHeader(t,m){$("hdrTitle").textContent=t||"MatheBase";$("hdrMeta").textContent=m||"";}
+function kName(id){for(var i=0;i<KIDS.length;i++)if(KIDS[i].id===id)return KIDS[i].name;return "";}
+function weekKuecheCount(p){var ws=weekStart();return p.kuecheDays.filter(function(d){return d>=ws;}).length;}
+function postKueche(payload){return fetch("/api/mathe/kueche",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)}).then(function(r){return r.json().then(function(j){return{ok:r.ok,j:j};});}).catch(function(){return{ok:false,j:null};});}
+function celebrate(){var c=$("confetti");c.innerHTML="";var em=["⭐","🎉","🍎","📚","✨","🏅"];for(var i=0;i<24;i++){var s=document.createElement("span");s.textContent=em[i%em.length];s.style.left=(Math.random()*100)+"%";s.style.animationDelay=(Math.random()*0.8)+"s";c.appendChild(s);}c.classList.remove("hidden");setTimeout(function(){c.classList.add("hidden");},3200);}
+function tryUnlockKueche(p,correct,total){var box=$("endKueche"),t=todayStr();box.classList.remove("hidden");
+ if(correct<MIN_FOR_KUECHE){box.className="banner";box.innerHTML="Noch <strong>"+(MIN_FOR_KUECHE-correct)+"</strong> mehr richtig → Küchenpunkt «Lesen oder Üben». Du schaffst das!";return Promise.resolve(false);}
+ if(!p.kitchenId){box.className="banner";box.innerHTML="Toll! Papa muss dein Profil noch mit der Küche verknüpfen.";return Promise.resolve(false);}
+ if(p.kuecheDate===t){box.className="banner";box.innerHTML="<strong>Küche:</strong> «Lesen oder Üben» ist heute schon freigeschaltet. Super!";return Promise.resolve(true);}
+ p.kuecheDate=t;p.kuechePending=true;if(p.kuecheDays.indexOf(t)<0)p.kuecheDays.push(t);if(p.kuecheDays.length>60)p.kuecheDays.splice(0,p.kuecheDays.length-60);
+ p.kuecheStreak=(p.lastKuecheDay===yesterdayStr())?(p.kuecheStreak||0)+1:1;p.lastKuecheDay=t;save();celebrate();
+ var payload={kind:p.kitchenId,date:t,habit:"lesen_oder_sport",correct:correct,total:total,profile:p.name};
+ box.className="banner";box.innerHTML="<strong>🎉 Küchenpunkt!</strong> «Lesen oder Üben» ist geschafft. Küchen-Serie: "+p.kuecheStreak+" Tag(e).";
+ return postKueche(payload).then(function(res){if(res.ok){p.kuechePending=false;save();box.innerHTML+=" Der Punkt ist auf dem Weg zum Küchen-Bildschirm!";}else{box.innerHTML+=" (Wird später gesendet.)";}return true;});}
+function flushPending(){var pend=state.profiles.filter(function(p){return p.kuechePending&&p.kitchenId;});if(!pend.length){$("syncStatus").textContent="Nichts offen.";return;}var okc=0,chain=Promise.resolve();
+ pend.forEach(function(p){chain=chain.then(function(){return postKueche({kind:p.kitchenId,date:p.kuecheDate||todayStr(),habit:"lesen_oder_sport",correct:MIN_FOR_KUECHE,total:ROUND_SIZE,profile:p.name}).then(function(r){if(r.ok){p.kuechePending=false;okc++;save();}});});});
+ chain.then(function(){$("syncStatus").textContent=okc+" von "+pend.length+" gesendet.";});}
+function renderProfiles(){var box=$("profileList");box.innerHTML="";state.profiles.forEach(function(p){var b=document.createElement("button");b.type="button";b.className="profile-btn";b.innerHTML='<span class="name"></span><span class="klasse"></span>';b.querySelector(".name").textContent=p.name;b.querySelector(".klasse").textContent="Klasse "+(p.klasse<=2?"2":"4/5")+" · "+p.points+" Pkt"+(p.kuecheDate===todayStr()?" · Küche ✓":"");b.addEventListener("click",function(){selectProfile(p.id);});box.appendChild(b);});}
+function selectProfile(id){activeId=id;refreshTodayCounters();save();renderHub();show("screen-hub");setHeader("MatheBase",getProfile(id).name);}
+function renderHub(){var p=getProfile(activeId),t=todayStr();$("hubHello").textContent="Hallo, "+p.name+"!";$("statPoints").textContent=String(p.points);$("statStreak").textContent=String(p.streak);
+ var kEl=$("statKueche"),ban=$("hubKuecheBanner");ban.classList.remove("hidden");
+ if(!p.kitchenId){kEl.textContent="–";ban.textContent="Noch nicht mit der Küche verknüpft (Papa-Menü).";}
+ else if(p.kuecheDate===t){kEl.textContent="✓";ban.innerHTML="<strong>Heute geschafft:</strong> «Lesen oder Üben» ✓"+(p.kuechePending?" (Sync offen)":"")+". Jetzt noch lesen? Das ist auch super!";}
+ else{kEl.textContent="offen";ban.innerHTML="<strong>Lesen oder Üben?</strong> 4 von 5 richtig → Küchenpunkt (+1 Richtung Gold).";}
+ var wk=weekKuecheCount(p);$("hubWeek").innerHTML="Diese Woche Mathe-Küchentage: <strong>"+wk+"</strong> / 7 · Küchen-Serie: <strong>"+(p.lastKuecheDay===t||p.lastKuecheDay===yesterdayStr()?p.kuecheStreak:0)+"</strong>";
+ $("hubBar").style.width=Math.min(100,Math.round(wk/7*100))+"%";
+ var tw=E.topWeak(p,1),chip=$("hubChip");if(tw.length){chip.classList.remove("hidden");chip.textContent="🎯 Heute üben: "+tw[0].name;}else chip.classList.add("hidden");}
+function startRound(){var p=getProfile(activeId);round={items:E.makeRound(p,{prozent:p.prozent}),index:0,correct:0,gained:0,results:[]};showExercise();}
+function showExercise(){var item=round.items[round.index];setHeader("Aufgabe "+(round.index+1)+"/"+ROUND_SIZE,getProfile(activeId).name);var t=E.topicById(item.topic);$("exTopic").textContent=t?t.name:"";$("exQuestion").textContent=item.prompt;$("exQuestion").className="exercise-q"+(item.prompt.length>22?" long":"");$("exFeedback").textContent="";$("exFeedback").className="feedback";$("exTip").classList.add("hidden");$("exAnswer").value="";$("exAnswer").disabled=false;$("btnCheck").classList.remove("hidden");$("btnHint").classList.toggle("hidden",!item.hint);$("btnNext").classList.add("hidden");renderProgress();show("screen-ex");setTimeout(function(){$("exAnswer").focus();},50);}
+function renderProgress(){var box=$("exProgress");box.innerHTML="";for(var i=0;i<ROUND_SIZE;i++){var d=document.createElement("div");d.className="dot";if(i===round.index)d.className+=" on";if(round.results[i]===true)d.className="dot ok";if(round.results[i]===false)d.className="dot bad";box.appendChild(d);}}
+function checkAnswer(){var raw=$("exAnswer").value,val=parseInt(raw,10);if(raw===""||isNaN(val))return;var p=getProfile(activeId),item=round.items[round.index],ok=val===item.answer;round.results[round.index]=ok;E.record(p,item,val,ok,todayStr());save();var fb=$("exFeedback");
+ if(ok){round.correct++;round.gained+=PTS_OK;fb.textContent=["Richtig!","Super!","Klasse!","Genau!"][Math.floor(Math.random()*4)]+" +"+PTS_OK;fb.className="feedback ok";}
+ else{fb.textContent="Fast! Richtig ist: "+item.answer;fb.className="feedback bad";var t=E.topicById(item.topic);$("exTip").textContent="💡 Tipp: "+(t?t.tip:"");$("exTip").classList.remove("hidden");}
+ $("exAnswer").disabled=true;$("btnCheck").classList.add("hidden");$("btnHint").classList.add("hidden");$("btnNext").classList.remove("hidden");$("btnNext").focus();renderProgress();}
+function nextExercise(){round.index++;if(round.index>=ROUND_SIZE)finishRound();else showExercise();}
+function finishRound(){var p=getProfile(activeId),t=todayStr(),gained=round.gained,bonus=0,sb=0;if(round.correct===ROUND_SIZE){bonus=PTS_BONUS;gained+=bonus;}
+ if(p.lastDay!==t){p.streak=p.lastDay===yesterdayStr()?(p.streak||0)+1:1;sb=PTS_STREAK;gained+=sb;p.lastDay=t;}
+ p.points+=gained;p.todayPoints+=gained;p.roundsToday++;p.rounds.push({d:t,c:round.correct,n:ROUND_SIZE,topics:round.items.map(function(i){return i.topic;})});if(p.rounds.length>60)p.rounds.splice(0,p.rounds.length-60);save();
+ var l=["Richtige: "+round.correct+" / "+ROUND_SIZE+"."];if(bonus)l.push("Alle richtig: +"+bonus+"!");if(sb)l.push("Serie: +"+sb+".");var tw=E.topWeak(p,1);if(tw.length)l.push("Nächstes Mal üben wir extra: "+tw[0].name+".");
+ $("endSummary").textContent=l.join(" ");$("endRoundPts").textContent=String(gained);$("endTotal").textContent=String(p.points);$("endStreak").textContent=String(p.streak);setHeader("Fertig!",p.name);show("screen-end");tryUnlockKueche(p,round.correct,ROUND_SIZE);}
+function openPin(from){returnAfterPapa=from||"profiles";pinBuffer="";updatePinDots();setHeader("Papa / Mama","");show("screen-pin");}
+function updatePinDots(){var s="";for(var i=0;i<4;i++)s+=i<pinBuffer.length?"●":"·";$("pinDots").textContent=s;}
+function pinDigit(d){if(pinBuffer.length>=4)return;pinBuffer+=String(d);updatePinDots();if(pinBuffer.length===4){var tryPin=pinBuffer;pinBuffer="";fetch("/api/pin",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({pin:tryPin})}).then(function(r){return r.json();}).then(function(j){if(j&&j.ok){renderPapa();show("screen-papa");setHeader("Einstellungen","");}else{$("pinDots").textContent=(j&&j.reason==="no_pin")?"Keine PIN":"Falsch";setTimeout(updatePinDots,900);}}).catch(function(){$("pinDots").textContent="Fehler";setTimeout(updatePinDots,900);});}}
+function exportData(){return{app:"mathebase",schema:SCHEMA,exportedAt:new Date().toISOString(),profiles:state.profiles.map(function(p){var st={};Object.keys(p.topicStats).forEach(function(k){var s=p.topicStats[k];st[k]={seen:s.seen,wrong:s.wrong,quote:s.seen?Math.round((s.seen-s.wrong)/s.seen*100):null};});return{name:p.name,kitchenId:p.kitchenId,klasse:p.klasse,points:p.points,streak:p.streak,kuecheStreak:p.kuecheStreak,kuecheDaysThisWeek:weekKuecheCount(p),kuecheToday:p.kuecheDate===todayStr(),kuechePending:p.kuechePending,schwacheThemen:E.topWeak(p,5),topicStats:st,letzteFehler:p.mistakes.slice(-10),roundsLast7:p.rounds.filter(function(r){var d=new Date();d.setDate(d.getDate()-7);return r.d>=fmt(d);}).length};})};}
+function renderPapa(){var box=$("papaProfiles");box.innerHTML="<h2>Profile ↔ Küche</h2>";state.profiles.forEach(function(p,idx){var w=document.createElement("div");w.className="card";w.style.marginTop="10px";
+ w.innerHTML='<div class="field"><label>Name</label><input type="text" class="pname" maxlength="20"></div><div class="field"><label>Klasse</label><select class="pklasse"><option value="2">Klasse 2 (+ / − bis 20)</option><option value="4">Klasse 4–5 (Einmaleins, ÷, bis 1000)</option></select></div><div class="field"><label>Küchen-Kind</label><select class="pkit"><option value="">— nicht verknüpft —</option></select></div><div class="field pproz"><label><input type="checkbox" class="pprozent" style="width:28px;height:28px;vertical-align:middle"> Prozent freischalten (nur Kl. 4/5)</label></div><p class="muted">Punkte: <span class="ppoints"></span> · Serie: <span class="pstreak"></span> · Küche heute: <span class="pkueche"></span></p><h2>Schwache Themen</h2><ul class="pweak muted"></ul><div class="row"><button type="button" class="secondary psave">Profil speichern</button><button type="button" class="warn preset">Schwache Themen zurücksetzen</button></div>';
+ var sel=w.querySelector(".pkit");KIDS.forEach(function(k){var o=document.createElement("option");o.value=k.id;o.textContent=k.name;sel.appendChild(o);});w.querySelector(".pname").value=p.name;w.querySelector(".pklasse").value=p.klasse<=2?"2":"4";w.querySelector(".pkit").value=p.kitchenId||"";w.querySelector(".pprozent").checked=!!p.prozent;w.querySelector(".pproz").style.display=p.klasse<=2?"none":"";
+ w.querySelector(".ppoints").textContent=p.points;w.querySelector(".pstreak").textContent=p.streak;w.querySelector(".pkueche").textContent=p.kuecheDate===todayStr()?(p.kuechePending?"wartet":"✓"):"offen";
+ var ul=w.querySelector(".pweak"),tw=E.topWeak(p,6);if(!tw.length)ul.innerHTML="<li>Keine – prima!</li>";tw.forEach(function(x){var li=document.createElement("li"),s=p.topicStats[x.id]||{seen:0,wrong:0};li.textContent=x.name+" · Gewicht "+x.weight+" · "+s.wrong+" Fehler / "+s.seen;ul.appendChild(li);});
+ w.querySelector(".preset").addEventListener("click",function(){if(!confirm("Schwache Themen von "+p.name+" zurücksetzen?"))return;p.weakTopics={};p.mistakes=[];save();renderPapa();});
+ w.querySelector(".psave").addEventListener("click",function(){var n=w.querySelector(".pname").value.replace(/^\s+|\s+$/g,"")||("Profil "+(idx+1));p.name=n.slice(0,20);var nk=parseInt(w.querySelector(".pklasse").value,10);if(nk!==p.klasse){p.weakTopics={};}p.klasse=nk;p.kitchenId=w.querySelector(".pkit").value;p.prozent=p.klasse>2&&w.querySelector(".pprozent").checked;
+  state.profiles.forEach(function(o){if(o!==p&&p.kitchenId&&o.kitchenId===p.kitchenId)o.kitchenId="";});save();renderProfiles();renderPapa();});
+ box.appendChild(w);});
+ var pend=state.profiles.filter(function(p){return p.kuechePending;}).length;$("syncStatus").textContent=pend?(pend+" Küchenpunkt(e) warten auf Sync."):"Alles synchron.";$("exportBox").textContent="";}
+function buildPinPad(){var pad=$("pinPad");pad.innerHTML="";[1,2,3,4,5,6,7,8,9,"C",0,"⌫"].forEach(function(k){var b=document.createElement("button");b.type="button";b.textContent=String(k);if(k==="C"){b.className="secondary";b.onclick=function(){pinBuffer="";updatePinDots();};}else if(k==="⌫"){b.className="secondary";b.onclick=function(){pinBuffer=pinBuffer.slice(0,-1);updatePinDots();};}else b.onclick=function(){pinDigit(k);};pad.appendChild(b);});}
+function goBackFromPapa(){renderProfiles();if(returnAfterPapa==="hub"&&activeId){renderHub();show("screen-hub");setHeader("MatheBase",getProfile(activeId).name);}else{show("screen-profiles");setHeader("MatheBase","");}}
+function bind(){
+ $("btnStartRound").onclick=startRound;$("btnCheck").onclick=checkAnswer;$("btnNext").onclick=nextExercise;
+ $("btnHint").onclick=function(){var it=round.items[round.index];$("exTip").textContent="🤔 Hilfe: "+it.hint;$("exTip").classList.remove("hidden");};
+ $("exAnswer").addEventListener("keydown",function(e){if(e.key==="Enter"){if(!$("btnCheck").classList.contains("hidden"))checkAnswer();else nextExercise();}});
+ $("btnNext").addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();nextExercise();}});
+ $("btnAgain").onclick=startRound;$("btnToHub").onclick=function(){renderHub();show("screen-hub");setHeader("MatheBase",getProfile(activeId).name);};
+ $("btnSwitch").onclick=function(){activeId=null;renderProfiles();show("screen-profiles");setHeader("MatheBase","");};
+ $("btnPapaFromStart").onclick=function(){openPin("profiles");};$("btnPapaFromHub").onclick=function(){openPin("hub");};
+ $("btnPinCancel").onclick=goBackFromPapa;$("btnPapaDone").onclick=goBackFromPapa;$("btnFlush").onclick=flushPending;
+ $("btnExport").onclick=function(){var txt=JSON.stringify(exportData(),null,2);$("exportBox").textContent=txt;try{var a=document.createElement("a");a.href="data:application/json;charset=utf-8,"+encodeURIComponent(txt);a.download="mathebase-export-"+todayStr()+".json";document.body.appendChild(a);a.click();a.remove();}catch(e){}};
+ $("btnResetDay").onclick=function(){if(!confirm("Punkte von heute zurücksetzen?"))return;var t=todayStr();state.profiles.forEach(function(p){p.todayPoints=0;p.todayDate=t;p.roundsToday=0;});save();renderPapa();};
+ $("btnResetAll").onclick=function(){if(!confirm("Wirklich ALLES löschen?")||!confirm("Letzte Bestätigung?"))return;["mathebase.v3","mathebase.v2","mathebase.v1"].forEach(function(k){localStorage.removeItem(k);});state=null;load();activeId=null;renderProfiles();show("screen-profiles");setHeader("MatheBase","");};
+}
+window.MB_TEST={round:function(){return round;},state:function(){return state;}};
+function start(){load();buildPinPad();bind();renderProfiles();setHeader("MatheBase","");show("screen-profiles");}
+fetch("/api/config").then(function(r){return r.json();}).then(function(c){KIDS=(c&&c.kinder)||[];}).catch(function(){KIDS=[];}).then(start);
+})();
+</script>
 </body>
 </html>

@@ -60,8 +60,14 @@ Description=Estacion de deberes - servidor web local
 After=network.target
 
 [Service]
-ExecStart=/usr/bin/python3 -m http.server $PORT --bind 127.0.0.1 --directory $WEB
+ExecStart=/usr/bin/python3 $REPO/server/server.py
+Environment=ESTACION_PORT=$PORT
+Environment=ESTACION_ROOT=$WEB
+Environment=ESTACION_CONFIG=/etc/estacion
+Environment=ESTACION_STATE=/var/lib/estacion
+StateDirectory=estacion
 User=nobody
+Group=nogroup
 Restart=always
 
 [Install]
@@ -71,6 +77,14 @@ systemctl daemon-reload
 systemctl enable --now estacion-web.service >/dev/null 2>&1
 systemctl restart estacion-web.service
 ok "Servidor activo: http://127.0.0.1:$PORT"
+
+mkdir -p /etc/estacion
+install -m 755 "$REPO/estacion-config.sh" /usr/local/bin/estacion-config
+if [ ! -f /etc/estacion/mathebase.json ]; then
+  warn "MatheBase aún sin nombres ni PIN. Configúralo con:  sudo estacion-config"
+else
+  ok "MatheBase configurado (nombres y PIN en /etc/estacion, fuera de GitHub)"
+fi
 
 # ---------------------------------------------------------------- 4. Firefox con lista blanca
 info "Firefox: solo webs permitidas"

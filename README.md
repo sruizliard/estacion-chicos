@@ -16,6 +16,14 @@ sudo bash estacion-chicos/setup.sh
 sudo estacion-update
 ```
 
+## MatheBase: nombres de los niños y PIN
+
+Se guardan solo en el Chromebook (`/etc/estacion`), nunca en este repo:
+
+```
+sudo estacion-config
+```
+
 ## Inicio automático con el usuario de los chicos
 
 ```
@@ -27,7 +35,7 @@ sudo bash /opt/estacion/repo/autologin.sh off   # desactivar
 
 - Instala GCompris, Tux Paint y Thonny
 - Página de inicio local "Lernen" en `http://127.0.0.1:8765` (carpeta `web/`)
-- MatheBase va en `web/mathebase/` (HTML/CSS/JS estático, sin framework)
+- MatheBase v3 en `web/mathebase/index.html`; servidor `server/server.py` (archivos estáticos + puente cocina, webhook opcional)
 - Firefox con lista blanca: solo la página local, Klexikon, ANTON, Antolin y sofatutor (`config/firefox-policies.json`)
 - Iconos en el escritorio del usuario `chicos` y sin bloqueo de pantalla
 - Comando `estacion-update` para aplicar cambios del repo
