@@ -126,8 +126,21 @@ EOF
 mkdir -p "$KIDHOME/.config/autostart"
 printf '[Desktop Entry]\nHidden=true\n' > "$KIDHOME/.config/autostart/light-locker.desktop"
 
+# Teclado alemán (ä ö ü ß) solo para los chicos; el admin sigue con el americano
+cat > "$XFCONF/keyboard-layout.xml" <<'EOF'
+<?xml version="1.0" encoding="UTF-8"?>
+<channel name="keyboard-layout" version="1.0">
+  <property name="Default" type="empty">
+    <property name="XkbDisable" type="bool" value="false"/>
+    <property name="XkbLayout" type="string" value="de"/>
+    <property name="XkbVariant" type="string" value="nodeadkeys"/>
+  </property>
+</channel>
+EOF
+
 chown -R "$KIDUSER:$KIDUSER" "$KIDHOME/Desktop" "$KIDHOME/.config"
 ok "Bloqueo de pantalla desactivado para '$KIDUSER'"
+ok "Teclado alemán para '$KIDUSER' (se aplica al volver a entrar)"
 
 # ---------------------------------------------------------------- 6. Comando de actualización
 cat > /usr/local/bin/estacion-update <<EOF
