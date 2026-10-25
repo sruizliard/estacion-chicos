@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lernen</title>
+<style>
+  :root {
+    --bg: #fdf6e9;
+    --ink: #2b2a33;
+    --muted: #6b6878;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "DejaVu Sans", "Noto Sans", sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 28px 24px;
+  }
+  h1 { font-size: 40px; margin: 0 0 4px; }
+  .hello { font-size: 20px; color: var(--muted); margin: 0 0 28px; }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+    width: 100%;
+    max-width: 1040px;
+  }
+  a.tile {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    min-height: 170px;
+    padding: 20px;
+    border-radius: 22px;
+    text-decoration: none;
+    color: #fff;
+    box-shadow: 0 6px 0 rgba(0,0,0,.18);
+    transition: transform .08s;
+  }
+  a.tile:active { transform: translateY(4px); box-shadow: 0 2px 0 rgba(0,0,0,.18); }
+  a.tile:focus-visible { outline: 5px solid var(--ink); outline-offset: 4px; }
+  .icon { font-size: 54px; line-height: 1; margin-bottom: auto; }
+  .name { font-size: 30px; font-weight: bold; }
+  .what { font-size: 17px; opacity: .92; margin-top: 2px; }
+  .big { grid-column: span 2; }
+  .mathe   { background: #e4572e; }
+  .klex    { background: #2e86ab; }
+  .anton   { background: #3bb273; }
+  .antolin { background: #7b4fbf; }
+  .sofa    { background: #f0a202; color: #2b2a33; }
+  footer { margin-top: 28px; font-size: 16px; color: var(--muted); }
+  @media (max-width: 700px) {
+    .grid { grid-template-columns: 1fr; }
+    .big { grid-column: auto; }
+  }
+</style>
+</head>
+<body>
+  <h1>Lernen</h1>
+  <p class="hello" id="hello">Hallo!</p>
+
+  <main class="grid">
+    <a class="tile mathe big" href="/mathebase/">
+      <span class="icon">🔢</span>
+      <span class="name">MatheBase</span>
+      <span class="what">Jeden Tag üben und Punkte sammeln</span>
+    </a>
+    <a class="tile klex" href="https://klexikon.zum.de/">
+      <span class="icon">📖</span>
+      <span class="name">Klexikon</span>
+      <span class="what">Das Kinder-Lexikon</span>
+    </a>
+    <a class="tile anton" href="https://anton.app/de/">
+      <span class="icon">🐜</span>
+      <span class="name">ANTON</span>
+      <span class="what">Lernen für die Schule</span>
+    </a>
+    <a class="tile antolin" href="https://antolin.westermann.de/">
+      <span class="icon">📚</span>
+      <span class="name">Antolin</span>
+      <span class="what">Bücher lesen, Quiz lösen</span>
+    </a>
+    <a class="tile sofa" href="https://www.sofatutor.com/">
+      <span class="icon">🎬</span>
+      <span class="name">sofatutor</span>
+      <span class="what">Lernvideos und Übungen</span>
+    </a>
+  </main>
+
+  <footer>GCompris, Tux Paint und Thonny findest du auf dem Desktop.</footer>
+
+<script>
+  var h = new Date().getHours();
+  var t = h < 11 ? "Guten Morgen!" : h < 17 ? "Hallo! Schön, dass du da bist." : "Guten Abend!";
+  document.getElementById("hello").textContent = t;
+</script>
+</body>
+</html>

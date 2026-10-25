@@ -1,0 +1,29 @@
+{
+  "policies": {
+    "WebsiteFilter": {
+      "Block": ["<all_urls>"],
+      "Exceptions": [
+        "http://127.0.0.1/*",
+        "https://*.zum.de/*",
+        "https://*.anton.app/*",
+        "https://*.westermann.de/*",
+        "https://*.sofatutor.com/*"
+      ]
+    },
+    "Homepage": {
+      "URL": "http://127.0.0.1:8765/",
+      "Locked": true,
+      "StartPage": "homepage"
+    },
+    "OverrideFirstRunPage": "",
+    "OverridePostUpdatePage": "",
+    "NoDefaultBookmarks": true,
+    "DontCheckDefaultBrowser": true,
+    "DisableTelemetry": true,
+    "DisableFirefoxStudies": true,
+    "DisablePocket": true,
+    "DisablePrivateBrowsing": true,
+    "DisableDeveloperTools": true,
+    "BlockAboutConfig": true
+  }
+}
