@@ -86,7 +86,7 @@ mkdir -p "$DESK"
 
 add_launcher() {   # $1 = patrón del .desktop del programa
   local f
-  f="$(ls /usr/share/applications/ 2>/dev/null | grep -i "$1" | grep '\.desktop$' | head -n1)"
+  f="$(ls /usr/share/applications/ 2>/dev/null | grep -i "$1" | grep -v -i config | grep '\.desktop$' | head -n1)"
   if [ -n "$f" ]; then
     cp "/usr/share/applications/$f" "$DESK/"
     ok "Icono: $f"
@@ -109,6 +109,7 @@ Terminal=false
 EOF
 ok "Icono: Lernen (página de inicio)"
 
+rm -f "$DESK"/*config*.desktop
 chmod +x "$DESK"/*.desktop
 
 # Sin bloqueo de pantalla para los chicos (la pantalla sí se apaga para ahorrar)
