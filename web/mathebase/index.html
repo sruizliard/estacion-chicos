@@ -118,6 +118,7 @@ label{display:block;font-size:20px;color:var(--muted);margin-bottom:6px}.field{m
     <h2>Küche / Sync</h2>
     <p class="muted" id="syncStatus">–</p>
     <button type="button" class="kueche" id="btnFlush">Ausstehende Küchenpunkte senden</button>
+    <button type="button" class="secondary" id="btnPingKueche">Test Küche (Ping, setzt kein Häkchen)</button>
     <pre id="exportBox" class="muted" style="font-size:14px;white-space:pre-wrap;word-break:break-all;margin-top:10px;"></pre>
   </div>
   <div class="card">
@@ -142,44 +143,94 @@ var R=Math.random;
 function ri(a,b){return Math.floor(R()*(b-a+1))+a;}
 function pick(a){return a[Math.floor(R()*a.length)];}
 function ex(topic,prompt,answer,hint,difficulty){return{topic:topic,prompt:prompt,answer:answer,hint:hint||"",difficulty:difficulty||1};}
-// ---- Klasse 2: nur + / −, Zahlen ≤ 20 (BW GS Kl.1/2, K2-ZO-1..4) ----
+var NAMES=["Lena","Ben","Mia","Tom","Emil","Noah","Ida","Paul"];
+// ---- Klasse 2 (BW GS Kl.2): ZR 100, Zehnerübergang, Ergänzen, Einmaleins-Start, Sachaufgaben; d=1..4 ----
 var K2=[
- {id:"plus",name:"Plus bis 20",tip:"Erst bis zur 10 auffüllen, dann den Rest dazu. Beispiel: 8 + 5 = 8 + 2 + 3.",gen:function(d){var a=ri(1,d<2?9:15),b=ri(1,Math.min(d<2?10-a:20-a,9));if(b<1)b=1;if(a+b>20)b=20-a;return ex("plus",a+" + "+b+" = ?",a+b,"Zähle von "+a+" aus weiter.",d);}},
- {id:"minus",name:"Minus bis 20",tip:"Erst bis zur 10 zurück, dann weiter. Beispiel: 13 − 5 = 13 − 3 − 2.",gen:function(d){var a=ri(d<2?3:11,d<2?10:20),b=ri(1,Math.min(a,9));return ex("minus",a+" − "+b+" = ?",a-b,"Geh von "+a+" rückwärts.",d);}},
- {id:"zehnerueber",name:"Über die 10",tip:"Zerlege die zweite Zahl so, dass du genau die 10 erreichst.",gen:function(d){if(R()<0.5){var a=ri(6,9),b=ri(11-a,9);return ex("zehnerueber",a+" + "+b+" = ?",a+b,"Wie viel fehlt von "+a+" bis 10?",d);}var c=ri(11,18),e=ri(c-9,9);return ex("zehnerueber",c+" − "+e+" = ?",c-e,"Erst bis zur 10, dann weiter.",d);}},
- {id:"ergaenzen",name:"Ergänzen",tip:"Frage dich: Wie viel fehlt noch bis zur Zielzahl? Rechne Ziel minus Start.",gen:function(d){var t=d<2?10:ri(11,20),a=ri(1,t-1);return ex("ergaenzen",a+" + __ = "+t,t-a,"Zähle von "+a+" bis "+t+".",d);}},
- {id:"verdoppeln",name:"Verdoppeln",tip:"Verdoppeln heißt: die Zahl plus dieselbe Zahl. 6 doppelt = 6 + 6.",gen:function(d){var a=ri(1,d<2?5:10);return ex("verdoppeln","Verdopple "+a+": "+a+" + "+a+" = ?",a+a,"Zweimal die gleiche Zahl.",d);}},
- {id:"halbieren",name:"Halbieren",tip:"Halbieren heißt: in zwei gleiche Teile teilen. Welche Zahl plus sich selbst ergibt die Zahl?",gen:function(d){var h=ri(1,d<2?5:10);return ex("halbieren","Die Hälfte von "+(2*h)+" ist ?",h,"Welche Zahl + gleiche Zahl = "+(2*h)+"?",d);}},
- {id:"reihenfolge",name:"Zahlen-Reihenfolge",tip:"Stell dir den Zahlenstrahl vor: Nachbarzahlen sind 1 davor oder 1 danach.",gen:function(d){var a=ri(2,18),k=ri(0,2);if(k===0)return ex("reihenfolge","Welche Zahl kommt nach "+a+"?",a+1,"Eins mehr.",d);if(k===1)return ex("reihenfolge","Welche Zahl kommt vor "+a+"?",a-1,"Eins weniger.",d);var s=ri(2,14);return ex("reihenfolge","Zähle in 2er-Schritten: "+s+", "+(s+2)+", "+(s+4)+", __",s+6,"Immer 2 mehr.",d);}}
+ {id:"plus",name:"Plus bis 100",tip:"Erst die Zehner, dann die Einer: 47 + 25 = 47 + 20 + 5.",gen:function(d){var a,b;
+  if(d<=1){a=ri(6,15);b=ri(3,9);}else if(d===2){a=10*ri(1,6)+ri(0,9);b=ri(2,9);}else if(d===3){a=ri(15,59);b=ri(11,35);}else{a=ri(28,69);b=ri(14,100-a);if(b<11)b=11;if(a+b>100)a=100-b;}
+  var s=pick([0,0,1,2]);if(s===1)return ex("plus",b+" + "+a+" = ?",a+b,"Tausche: erst die größere Zahl.",d);
+  if(s===2)return ex("plus","Rechne: "+a+" plus "+b,a+b,"Zehner zuerst.",d);
+  return ex("plus",a+" + "+b+" = ?",a+b,"Zerlege "+b+" in Zehner und Einer.",d);}},
+ {id:"minus",name:"Minus bis 100",tip:"Erst die Zehner abziehen, dann die Einer: 72 − 28 = 72 − 20 − 8.",gen:function(d){var a,b;
+  if(d<=1){a=ri(12,20);b=ri(3,9);}else if(d===2){a=ri(30,99);b=ri(2,9);}else if(d===3){a=ri(40,99);b=ri(11,a-15);}else{a=ri(51,100);b=ri(16,a-8);}
+  if(R()<0.25)return ex("minus","Von "+a+" nimm "+b+" weg. Wie viel bleibt?",a-b,"Rückwärts rechnen.",d);
+  return ex("minus",a+" − "+b+" = ?",a-b,"Erst Zehner, dann Einer abziehen.",d);}},
+ {id:"zehnerueber",name:"Über den Zehner",tip:"Fülle bis zum nächsten Zehner auf: 38 + 7 = 38 + 2 + 5.",gen:function(d){var z=d<=1?0:10*ri(1,d<3?4:8),e=ri(5,9),b=ri(11-e,9);
+  if(R()<0.5)return ex("zehnerueber",(z+e)+" + "+b+" = ?",z+e+b,"Wie viel fehlt bis "+(z+10)+"?",d);
+  var c=z+10+ri(1,7),f=ri(c-z-9>2?c-z-9:3,9);return ex("zehnerueber",c+" − "+f+" = ?",c-f,"Erst zurück bis "+(z+10)+".",d);}},
+ {id:"ergaenzen",name:"Ergänzen bis 100",tip:"Wie viel fehlt? Erst bis zum nächsten Zehner, dann bis zum Ziel.",gen:function(d){var t,a;
+  if(d<=1){t=20;a=ri(5,18);}else if(d===2){t=pick([50,100]);a=10*ri(1,t/10-1);}else{t=d===3?pick([50,60,80,100]):100;a=ri(11,t-6);}
+  var s=ri(0,2);if(s===0)return ex("ergaenzen",a+" + __ = "+t,t-a,"Zähle von "+a+" bis "+t+".",d);
+  if(s===1)return ex("ergaenzen","__ + "+a+" = "+t,t-a,"Ziel minus "+a+".",d);
+  return ex("ergaenzen","Wie viel fehlt von "+a+" bis "+t+"?",t-a,"Erst bis zum nächsten Zehner.",d);}},
+ {id:"verdoppeln",name:"Verdoppeln & Halbieren",tip:"Verdoppeln: Zehner und Einer einzeln verdoppeln. 36 doppelt = 60 + 12.",gen:function(d){var mx=[0,10,25,40,50][d]||25;
+  if(R()<0.5){var a=ri(d<=1?3:8,mx);return ex("verdoppeln","Das Doppelte von "+a+" ist ?",2*a,a+" + "+a+".",d);}
+  var h=ri(d<=1?2:6,mx);return ex("verdoppeln","Die Hälfte von "+(2*h)+" ist ?",h,"Welche Zahl + gleiche Zahl = "+(2*h)+"?",d);}},
+ {id:"reihenfolge",name:"Zahlenfolgen",tip:"Schau, wie viel immer dazukommt (oder weggeht).",gen:function(d){var st=pick(d<=1?[2]:d===2?[2,5,10]:[3,4,5,10,-2,-5,-10]),n=ri(0,9),s=(st>0)?st*ri(0,Math.min(d<=2?4:8,Math.floor((100-3*st)/st))):100+st*ri(0,6);
+  if(st<0&&s<-st*4)s=-st*6;var seq=[s,s+st,s+2*st,s+3*st];
+  if(R()<0.5)return ex("reihenfolge","Wie geht es weiter? "+seq.slice(0,3).join(", ")+", __",seq[3],"Immer "+(st>0?st+" mehr":(-st)+" weniger")+".",d);
+  return ex("reihenfolge","Welche Zahl fehlt? "+seq[0]+", __, "+seq[2]+", "+seq[3],seq[1],"Abstand "+Math.abs(st)+".",d);}},
+ {id:"einmaleins2",name:"Einmaleins-Start",tip:"Mal ist schnelles Plus: 4 · 5 = 5 + 5 + 5 + 5.",gen:function(d){var r=pick(d<=2?[2,5,10]:[2,3,4,5,10]),k=ri(1,10);
+  var s=ri(0,d>=3?2:1);if(s===0)return ex("einmaleins2",k+" · "+r+" = ?",k*r,k+"-mal die "+r+".",d);
+  if(s===1)return ex("einmaleins2",k+" Päckchen mit je "+r+" Stiften. Wie viele Stifte?",k*r,k+" · "+r+".",d);
+  return ex("einmaleins2","__ · "+r+" = "+(k*r),k,"Wie oft passt "+r+" in "+(k*r)+"?",d);}},
+ {id:"sachaufgabe2",name:"Sachaufgaben",tip:"Lies genau: Was weißt du? Was ist gefragt? Plus oder minus?",gen:function(d){var n=pick(NAMES),k=ri(0,3),a,b,c;
+  if(k===0){a=ri(10,d<=2?30:60);b=ri(5,d<=2?15:35);return ex("sachaufgabe2",n+" hat "+a+" Murmeln und bekommt "+b+" dazu. Wie viele sind es jetzt?",a+b,"Dazu = plus.",d);}
+  if(k===1){a=ri(30,d<=2?50:100);b=ri(8,a-10);return ex("sachaufgabe2","Im Bus sitzen "+a+" Kinder. "+b+" steigen aus. Wie viele bleiben?",a-b,"Aussteigen = minus.",d);}
+  if(k===2){a=ri(2,5);b=pick([2,5,10]);return ex("sachaufgabe2",n+" kauft "+a+" Hefte zu je "+b+" €. Wie viel € kostet das?",a*b,a+" · "+b+".",d);}
+  a=ri(35,60);b=ri(5,15);c=ri(5,15);if(d<=1)c=0;return ex("sachaufgabe2",n+" hat "+a+" €. Ein Buch kostet "+b+" €"+(c?", ein Stift "+c+" €":"")+". Wie viel € bleiben?",a-b-c,"Alles abziehen.",d);}}
 ];
-// ---- Klasse 4/5: Einmaleins, Division, Stellenwert, ZR 1000, Sachaufgaben; % gesperrt ----
+// ---- Klasse 4/5: Einmaleins, Division, Stellenwert, ZR 1000, Sachaufgaben; % gesperrt; d=1..4 ----
 var K5=[
- {id:"einmaleins",name:"Einmaleins",tip:"Nutze Kernaufgaben: 7 · 8 = 5 · 8 + 2 · 8 = 40 + 16.",gen:function(d){var a=ri(d<2?2:3,10),b=ri(2,10);return ex("einmaleins",a+" · "+b+" = ?",a*b,"Denk an "+Math.min(a,5)+" · "+b+" und rechne weiter.",d);}},
- {id:"division",name:"Geteilt",tip:"Geteilt ist die Umkehr vom Mal: 56 : 8 = ? → Welche Zahl mal 8 ergibt 56?",gen:function(d){var b=ri(2,10),q=ri(2,d<3?10:12);return ex("division",(b*q)+" : "+b+" = ?",q,"Welche Zahl · "+b+" = "+(b*q)+"?",d);}},
- {id:"stellenwert",name:"Stellenwert",tip:"H = Hunderter, Z = Zehner, E = Einer. 3 H 4 Z 7 E = 300 + 40 + 7 = 347.",gen:function(d){var h=ri(1,9),z=ri(0,9),e=ri(0,9),n=100*h+10*z+e;if(R()<0.5)return ex("stellenwert",h+" H + "+z+" Z + "+e+" E = ?",n,"Hunderter · 100, Zehner · 10.",d);return ex("stellenwert","Wie viele Zehner hat "+n+" an der Zehnerstelle?",z,"Die mittlere Ziffer.",d);}},
- {id:"zr1000plus",name:"Plus bis 1000",tip:"Rechne stellenweise: erst Hunderter, dann Zehner, dann Einer.",gen:function(d){var a=ri(100,d<2?400:700),b=ri(d<2?10:50,Math.min(999-a,d<2?99:299));return ex("zr1000plus",a+" + "+b+" = ?",a+b,"Zerlege "+b+" in Hunderter, Zehner, Einer.",d);}},
- {id:"zr1000minus",name:"Minus bis 1000",tip:"Zieh erst die Hunderter ab, dann die Zehner, dann die Einer.",gen:function(d){var a=ri(200,999),b=ri(d<2?10:50,Math.min(a-1,d<2?99:299));return ex("zr1000minus",a+" − "+b+" = ?",a-b,"Schritt für Schritt abziehen.",d);}},
- {id:"halbschriftlich",name:"Mal mit großen Zahlen",tip:"Zerlege: 23 · 4 = 20 · 4 + 3 · 4 = 80 + 12.",gen:function(d){var a=ri(11,d<2?25:49),b=ri(2,d<2?5:9);return ex("halbschriftlich",a+" · "+b+" = ?",a*b,"Zehner und Einer getrennt malnehmen.",d);}},
- {id:"sachaufgabe",name:"Sachaufgaben",tip:"Lies genau: Was ist gegeben? Was ist gefragt? Welche Rechnung passt?",gen:function(d){var k=ri(0,3),a,b;
-  if(k===0){a=ri(3,9);b=ri(2,8);return ex("sachaufgabe","Ein Heft kostet "+a+" €. Du kaufst "+b+" Hefte. Wie viel € zahlst du?",a*b,"Preis · Anzahl.",d);}
-  if(k===1){b=ri(2,6);a=b*ri(3,9);return ex("sachaufgabe",a+" Bonbons werden gerecht an "+b+" Kinder verteilt. Wie viele bekommt jedes Kind?",a/b,"Teilen: "+a+" : "+b+".",d);}
-  if(k===2){a=ri(200,480);b=ri(30,150);return ex("sachaufgabe","Die Schule hat "+a+" Kinder, "+b+" sind auf Ausflug. Wie viele sind in der Schule?",a-b,"Minus rechnen.",d);}
-  a=ri(2,5);return ex("sachaufgabe","Eine Stunde hat 60 Minuten. Wie viele Minuten sind "+a+" Stunden?",60*a,"60 · "+a+".",d);}},
+ {id:"einmaleins",name:"Einmaleins",tip:"Nutze Kernaufgaben: 7 · 8 = 5 · 8 + 2 · 8 = 40 + 16.",gen:function(d){var a,b;if(d<=1){a=ri(3,9);b=ri(3,10);}else{a=ri(6,9);b=ri(d>=3?6:3,9);}if(R()<0.5){var t=a;a=b;b=t;}
+  if(d>=3&&R()<0.5){return R()<0.5?ex("einmaleins","__ · "+b+" = "+(a*b),a,"Welche Zahl mal "+b+"?",d):ex("einmaleins",a+" · __ = "+(a*b),b,"Welche Zahl mal "+a+"?",d);}
+  return ex("einmaleins",a+" · "+b+" = ?",a*b,"Denk an 5 · "+b+" und rechne weiter.",d);}},
+ {id:"division",name:"Geteilt",tip:"Geteilt ist die Umkehr vom Mal: 56 : 8 = ? → Welche Zahl mal 8 ergibt 56?",gen:function(d){var b=ri(d<=1?2:4,9),q=ri(d<=1?2:5,d<3?10:d===3?15:25);
+  if(d>=4&&R()<0.4){var r=ri(1,b-1),n=b*q+r;if(q<=12)return ex("division",n+" : "+b+" = __ Rest "+r,q,"Größte Zahl · "+b+" unter "+n+".",d);}
+  if(d>=3&&R()<0.3)return ex("division","__ : "+b+" = "+q,b*q,q+" · "+b+".",d);
+  return ex("division",(b*q)+" : "+b+" = ?",q,"Welche Zahl · "+b+" = "+(b*q)+"?",d);}},
+ {id:"stellenwert",name:"Stellenwert",tip:"T = Tausender, H = Hunderter, Z = Zehner, E = Einer. 3 H 4 Z 7 E = 347.",gen:function(d){var h=ri(1,9),z=ri(0,9),e=ri(0,9),n=100*h+10*z+e,k=ri(0,d>=3?3:1);
+  if(k===0)return ex("stellenwert",h+" H + "+z+" Z + "+e+" E = ?",n,"Hunderter · 100, Zehner · 10.",d);
+  if(k===1)return ex("stellenwert","Welche Ziffer steht in "+n+" an der Zehnerstelle?",z,"Die mittlere Ziffer.",d);
+  if(k===2)return ex("stellenwert",e+" E + "+h+" H + "+z+" Z = ?",n,"Ordne: H, Z, E.",d);
+  var t=ri(1,9);return ex("stellenwert",t+" T + "+e+" E + "+h+" H = ?",1000*t+100*h+e,"Keine Zehner → 0 an der Zehnerstelle.",d);}},
+ {id:"zr1000plus",name:"Plus bis 1000",tip:"Rechne stellenweise: erst Hunderter, dann Zehner, dann Einer. Übertrag nicht vergessen!",gen:function(d){var a,b;
+  if(d<=1){a=ri(120,400);b=ri(20,99);}else if(d===2){a=ri(150,600);b=ri(120,299);}else{a=ri(250,690)+5;b=ri(150,980-a);a=a-(a%10)+ri(5,9);b=b-(b%10)+ri(5,9);}
+  if(a+b>999)b=999-a;if(R()<0.25)return ex("zr1000plus","__ − "+b+" = "+a,a+b,"Umkehraufgabe: "+a+" + "+b+".",d);
+  return ex("zr1000plus",a+" + "+b+" = ?",a+b,"Zerlege "+b+" in H, Z, E.",d);}},
+ {id:"zr1000minus",name:"Minus bis 1000",tip:"Zieh erst die Hunderter ab, dann die Zehner, dann die Einer.",gen:function(d){var a=ri(d<=1?200:400,999),b=ri(d<=1?20:110,Math.min(a-20,d<=1?99:d===2?299:a-20));
+  if(d>=3){a=a-(a%10)+ri(0,4);b=b-(b%10)+ri(5,9);if(b>=a)b=a-ri(11,40);}
+  if(R()<0.25)return ex("zr1000minus",a+" − __ = "+(a-b),b,"Wie viel fehlt von "+(a-b)+" bis "+a+"?",d);
+  return ex("zr1000minus",a+" − "+b+" = ?",a-b,"Schritt für Schritt abziehen.",d);}},
+ {id:"halbschriftlich",name:"Mal mit großen Zahlen",tip:"Zerlege: 67 · 8 = 60 · 8 + 7 · 8 = 480 + 56.",gen:function(d){var a=ri(d<=1?12:23,[0,29,49,79,99][d]||49),b=ri(d<=1?2:4,9);
+  if(d>=4&&R()<0.3){var c=ri(11,19);return ex("halbschriftlich",c+"0 · "+b+" = ?",c*b*10,"Erst "+c+" · "+b+", dann · 10.",d);}
+  return ex("halbschriftlich",a+" · "+b+" = ?",a*b,"Zehner und Einer getrennt malnehmen.",d);}},
+ {id:"sachaufgabe",name:"Sachaufgaben",tip:"Lies genau: Was ist gegeben? Was ist gefragt? Welche Rechnung passt? Manchmal braucht man 2 Schritte.",gen:function(d){var n=pick(NAMES),k=ri(0,d>=3?8:4),a,b,c;
+  if(k===0){a=ri(3,9);b=ri(4,9);return ex("sachaufgabe","Ein Heft kostet "+a+" €. "+n+" kauft "+b+" Hefte. Wie viel € zahlt "+n+"?",a*b,"Preis · Anzahl.",d);}
+  if(k===1){b=ri(3,9);a=b*ri(4,12);return ex("sachaufgabe",a+" Bonbons werden gerecht an "+b+" Kinder verteilt. Wie viele bekommt jedes Kind?",a/b,"Teilen: "+a+" : "+b+".",d);}
+  if(k===2){a=ri(300,780);b=ri(45,260);return ex("sachaufgabe","Die Schule hat "+a+" Kinder, "+b+" sind auf Ausflug. Wie viele sind in der Schule?",a-b,"Minus rechnen.",d);}
+  if(k===3){a=ri(2,6);b=ri(5,45);return ex("sachaufgabe","Wie viele Minuten sind "+a+" Stunden und "+b+" Minuten?",60*a+b,"60 · "+a+" + "+b+".",d);}
+  if(k===4){a=ri(2,8);b=ri(5,95);return ex("sachaufgabe","Wie viele Zentimeter sind "+a+" m und "+b+" cm?",100*a+b,"1 m = 100 cm.",d);}
+  if(k===5){a=ri(3,8);b=ri(4,9);c=pick([50,100]);if(a*b>c)c=100;if(a*b>c)b=Math.floor(c/a);return ex("sachaufgabe",n+" kauft "+b+" Stifte zu je "+a+" € und zahlt mit "+c+" €. Wie viel € Rückgeld?",c-a*b,"Erst "+b+" · "+a+", dann von "+c+" abziehen.",d);}
+  if(k===6){a=ri(7,10);b=pick([15,20,25,30,35,40,45]);c=ri(25,90);return ex("sachaufgabe","Ein Film beginnt um "+a+":"+(b<10?"0":"")+b+" Uhr und dauert "+c+" Minuten. Um wie viele Minuten nach "+a+" Uhr endet er?",b+c,b+" + "+c+".",d);}
+  if(k===7){a=ri(3,9);b=ri(12,48);return ex("sachaufgabe","Ein Regal hat "+a+" Bretter mit je "+b+" Büchern. 25 Bücher werden verliehen. Wie viele bleiben?",a*b-25,"Erst "+a+" · "+b+", dann − 25.",d);}
+  a=ri(120,450);b=ri(2,4);return ex("sachaufgabe","Ein Weg ist "+a+" m lang. "+n+" läuft ihn "+b+"-mal hin. Wie viele Meter?",a*b,a+" · "+b+".",d);}},
  {id:"prozent",name:"Prozent",locked:true,tip:"10 % ist ein Zehntel: teile durch 10. 50 % ist die Hälfte.",gen:function(d){var base=pick([20,50,100,200,300,400,500]),p=pick([10,50,25]);if(p===25&&base%4)p=10;return ex("prozent",p+" % von "+base+" = ?",base*p/100,"",d);}}
 ];
 function bank(klasse,opts){var src=klasse<=2?K2:K5;return src.filter(function(t){return !t.locked||(opts&&opts.prozent);});}
 function topicById(id){var all=K2.concat(K5);for(var i=0;i<all.length;i++)if(all[i].id===id)return all[i];return null;}
 function weightedPick(list,w){var s=0,i;for(i=0;i<list.length;i++)s+=w[list[i]];var r=R()*s;for(i=0;i<list.length;i++){r-=w[list[i]];if(r<=0)return list[i];}return list[list.length-1];}
-var WEAK_SHARE=0.6,ROUND=5,W_WRONG=1,W_CAP=6,DECAY=0.8,W_MIN=0.25;
+var WEAK_SHARE=0.6,ROUND=5,W_WRONG=1,W_CAP=6,DECAY=0.8,W_MIN=0.25,DMAX=4;
 function weakList(profile,allowed){var w=profile.weakTopics||{},ids=allowed.map(function(t){return t.id;});return ids.filter(function(id){return (w[id]||0)>=W_MIN;});}
+// Runde: 1 Aufwärmaufgabe, dann schwerer (Ziel d3–4). Schwache Themen: mittel (d2–3), nie Baby-leicht.
+function diffFor(n,useWeak,wt){if(useWeak)return wt>3?2:ri(2,3);if(n===0)return ri(1,2);return R()<0.75?ri(3,DMAX):2;}
 function makeRound(profile,opts){
- var allowed=bank(profile.klasse,opts),weak=weakList(profile,allowed),items=[],seen={},w=profile.weakTopics||{};
+ var allowed=bank(profile.klasse,opts),weak=weakList(profile,allowed),items=[],seen={},topics={},w=profile.weakTopics||{};
  for(var n=0;n<ROUND;n++){var tries=0,e;do{
    var useWeak=weak.length&&R()<WEAK_SHARE,id=useWeak?weightedPick(weak,w):pick(allowed).id,t=topicById(id);
-   // schwache Themen leichter (Erfolgserlebnis), starke Themen schwerer
-   var diff=useWeak?((w[id]||0)>2?1:2):ri(1,3);
-   e=t.gen(diff);e.fromWeak=!!useWeak;tries++;}while(seen[e.prompt]&&tries<10);
-  seen[e.prompt]=1;items.push(e);}
+   if(!useWeak&&topics[id]&&tries<6){tries++;continue;}
+   e=t.gen(diffFor(n,useWeak,w[id]||0));e.fromWeak=!!useWeak;tries++;}while((!e||seen[e.prompt])&&tries<12);
+  seen[e.prompt]=1;topics[e.topic]=1;items.push(e);}
  return items;}
 function record(profile,item,given,ok,dateStr){
  profile.weakTopics=profile.weakTopics||{};profile.topicStats=profile.topicStats||{};profile.mistakes=profile.mistakes||[];
@@ -187,15 +238,15 @@ function record(profile,item,given,ok,dateStr){
  if(ok){if(w[item.topic]){w[item.topic]=Math.round(w[item.topic]*DECAY*100)/100;if(w[item.topic]<W_MIN)delete w[item.topic];}}
  else{s.wrong++;w[item.topic]=Math.min(W_CAP,(w[item.topic]||0)+W_WRONG);profile.mistakes.push({d:dateStr||"",topic:item.topic,prompt:item.prompt,given:given,answer:item.answer});if(profile.mistakes.length>40)profile.mistakes.splice(0,profile.mistakes.length-40);}}
 function topWeak(profile,k){var w=profile.weakTopics||{};return Object.keys(w).sort(function(a,b){return w[b]-w[a];}).slice(0,k||5).map(function(id){var t=topicById(id);return{id:id,name:t?t.name:id,weight:w[id]};});}
-function validK2(e){return !/[·×÷%]|\d :/.test(e.prompt)&&(e.prompt.match(/\d+/g)||[]).every(function(x){return +x<=20;})&&e.answer>=0&&e.answer<=20;}
-return{K2:K2,K5:K5,bank:bank,topicById:topicById,makeRound:makeRound,record:record,topWeak:topWeak,validK2:validK2,ROUND:ROUND};
+function validK2(e){return !/[÷%]|\d\s*:\s*\d/.test(e.prompt)&&(e.prompt.match(/\d+/g)||[]).every(function(x){return +x<=100;})&&Number.isInteger(e.answer)&&e.answer>=0&&e.answer<=100;}
+return{K2:K2,K5:K5,bank:bank,topicById:topicById,makeRound:makeRound,record:record,topWeak:topWeak,validK2:validK2,ROUND:ROUND,DMAX:DMAX};
 })();
 if(typeof module!=="undefined")module.exports=ENGINE;
 /*ENGINE-END*/
 
 (function(){
 "use strict";
-var E=ENGINE,STORAGE_KEY="mathebase.v3",SCHEMA=3,DEFAULT_PIN="",ROUND_SIZE=E.ROUND,MIN_FOR_KUECHE=4,PTS_OK=10,PTS_BONUS=20,PTS_STREAK=5;
+var E=ENGINE,STORAGE_KEY="mathebase.v3",SCHEMA=4,DEFAULT_PIN="",ROUND_SIZE=E.ROUND,MIN_FOR_KUECHE=4,PTS_OK=10,PTS_BONUS=20,PTS_STREAK=5;
 var KIDS=[],state=null,activeId=null,round=null,pinBuffer="",returnAfterPapa="profiles";
 function $(id){return document.getElementById(id);}
 function fmt(d){var m=String(d.getMonth()+1),day=String(d.getDate());if(m.length<2)m="0"+m;if(day.length<2)day="0"+day;return d.getFullYear()+"-"+m+"-"+day;}
@@ -218,7 +269,9 @@ function show(id){var s=document.querySelectorAll(".screen");for(var i=0;i<s.len
 function setHeader(t,m){$("hdrTitle").textContent=t||"MatheBase";$("hdrMeta").textContent=m||"";}
 function kName(id){for(var i=0;i<KIDS.length;i++)if(KIDS[i].id===id)return KIDS[i].name;return "";}
 function weekKuecheCount(p){var ws=weekStart();return p.kuecheDays.filter(function(d){return d>=ws;}).length;}
-function postKueche(payload){return fetch("/api/mathe/kueche",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)}).then(function(r){return r.json().then(function(j){return{ok:r.ok,j:j};});}).catch(function(){return{ok:false,j:null};});}
+function postKueche(payload){if(location.protocol==="file:")return Promise.resolve({ok:false,j:null,why:"no_server"});return fetch("/api/mathe/kueche",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)}).then(function(r){return r.json().then(function(j){var fw=!!(r.ok&&j&&j.forwarded);return{ok:fw,j:j,why:fw?"ok":(j&&j.detail)||("http_"+r.status)};},function(){return{ok:false,j:null,why:"http_"+r.status+" (server.py läuft nicht?)"};});}).catch(function(){return{ok:false,j:null,why:"no_server"};});}
+function whyText(w){return w==="no_webhook_config"?"Webhook fehlt: am Chromebook als Admin «sudo estacion-config» → Webhook eintragen.":w==="no_server"?"server.py läuft nicht (App über http://localhost:8765 öffnen).":w==="forward_failed"?"Webhook-Aufruf fehlgeschlagen (Internet / URL / Key prüfen).":String(w);}
+function pingKueche(){var s=$("syncStatus");s.textContent="Teste…";postKueche({action:"ping",kind:"test",date:todayStr()}).then(function(r){s.textContent=r.ok?"✅ Test-Ping an Küche gesendet ("+(r.j&&r.j.detail)+"). Kein Häkchen gesetzt.":"❌ "+whyText(r.why);});}
 function celebrate(){var c=$("confetti");c.innerHTML="";var em=["⭐","🎉","🍎","📚","✨","🏅"];for(var i=0;i<24;i++){var s=document.createElement("span");s.textContent=em[i%em.length];s.style.left=(Math.random()*100)+"%";s.style.animationDelay=(Math.random()*0.8)+"s";c.appendChild(s);}c.classList.remove("hidden");setTimeout(function(){c.classList.add("hidden");},3200);}
 function tryUnlockKueche(p,correct,total){var box=$("endKueche"),t=todayStr();box.classList.remove("hidden");
  if(correct<MIN_FOR_KUECHE){box.className="banner";box.innerHTML="Noch <strong>"+(MIN_FOR_KUECHE-correct)+"</strong> mehr richtig → Küchenpunkt «Lesen oder Üben». Du schaffst das!";return Promise.resolve(false);}
@@ -228,10 +281,10 @@ function tryUnlockKueche(p,correct,total){var box=$("endKueche"),t=todayStr();bo
  p.kuecheStreak=(p.lastKuecheDay===yesterdayStr())?(p.kuecheStreak||0)+1:1;p.lastKuecheDay=t;save();celebrate();
  var payload={kind:p.kitchenId,date:t,habit:"lesen_oder_sport",correct:correct,total:total,profile:p.name};
  box.className="banner";box.innerHTML="<strong>🎉 Küchenpunkt!</strong> «Lesen oder Üben» ist geschafft. Küchen-Serie: "+p.kuecheStreak+" Tag(e).";
- return postKueche(payload).then(function(res){if(res.ok){p.kuechePending=false;save();box.innerHTML+=" Der Punkt ist auf dem Weg zum Küchen-Bildschirm!";}else{box.innerHTML+=" (Wird später gesendet.)";}return true;});}
-function flushPending(){var pend=state.profiles.filter(function(p){return p.kuechePending&&p.kitchenId;});if(!pend.length){$("syncStatus").textContent="Nichts offen.";return;}var okc=0,chain=Promise.resolve();
- pend.forEach(function(p){chain=chain.then(function(){return postKueche({kind:p.kitchenId,date:p.kuecheDate||todayStr(),habit:"lesen_oder_sport",correct:MIN_FOR_KUECHE,total:ROUND_SIZE,profile:p.name}).then(function(r){if(r.ok){p.kuechePending=false;okc++;save();}});});});
- chain.then(function(){$("syncStatus").textContent=okc+" von "+pend.length+" gesendet.";});}
+ return postKueche(payload).then(function(res){if(res.ok){p.kuechePending=false;save();box.innerHTML+=" Der Punkt ist auf dem Weg zum Küchen-Bildschirm!";}else{box.innerHTML+=" (Wird später gesendet – Papa: "+whyText(res.why)+")";}return true;});}
+function flushPending(){var pend=state.profiles.filter(function(p){return p.kuechePending&&p.kitchenId;});if(!pend.length){$("syncStatus").textContent="Nichts offen.";return;}var okc=0,last="",chain=Promise.resolve();
+ pend.forEach(function(p){chain=chain.then(function(){return postKueche({kind:p.kitchenId,date:p.kuecheDate||todayStr(),habit:"lesen_oder_sport",correct:MIN_FOR_KUECHE,total:ROUND_SIZE,profile:p.name}).then(function(r){if(r.ok){p.kuechePending=false;okc++;save();}else last=r.why;});});});
+ chain.then(function(){$("syncStatus").textContent=okc+" von "+pend.length+" gesendet."+(last?" Fehler: "+whyText(last):"");});}
 function renderProfiles(){var box=$("profileList");box.innerHTML="";state.profiles.forEach(function(p){var b=document.createElement("button");b.type="button";b.className="profile-btn";b.innerHTML='<span class="name"></span><span class="klasse"></span>';b.querySelector(".name").textContent=p.name;b.querySelector(".klasse").textContent="Klasse "+(p.klasse<=2?"2":"4/5")+" · "+p.points+" Pkt"+(p.kuecheDate===todayStr()?" · Küche ✓":"");b.addEventListener("click",function(){selectProfile(p.id);});box.appendChild(b);});}
 function selectProfile(id){activeId=id;refreshTodayCounters();save();renderHub();show("screen-hub");setHeader("MatheBase",getProfile(id).name);}
 function renderHub(){var p=getProfile(activeId),t=todayStr();$("hubHello").textContent="Hallo, "+p.name+"!";$("statPoints").textContent=String(p.points);$("statStreak").textContent=String(p.streak);
@@ -260,8 +313,8 @@ function updatePinDots(){var s="";for(var i=0;i<4;i++)s+=i<pinBuffer.length?"●
 function pinDigit(d){if(pinBuffer.length>=4)return;pinBuffer+=String(d);updatePinDots();if(pinBuffer.length===4){var tryPin=pinBuffer;pinBuffer="";fetch("/api/pin",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({pin:tryPin})}).then(function(r){return r.json();}).then(function(j){if(j&&j.ok){renderPapa();show("screen-papa");setHeader("Einstellungen","");}else{$("pinDots").textContent=(j&&j.reason==="no_pin")?"Keine PIN":"Falsch";setTimeout(updatePinDots,900);}}).catch(function(){$("pinDots").textContent="Fehler";setTimeout(updatePinDots,900);});}}
 function exportData(){return{app:"mathebase",schema:SCHEMA,exportedAt:new Date().toISOString(),profiles:state.profiles.map(function(p){var st={};Object.keys(p.topicStats).forEach(function(k){var s=p.topicStats[k];st[k]={seen:s.seen,wrong:s.wrong,quote:s.seen?Math.round((s.seen-s.wrong)/s.seen*100):null};});return{name:p.name,kitchenId:p.kitchenId,klasse:p.klasse,points:p.points,streak:p.streak,kuecheStreak:p.kuecheStreak,kuecheDaysThisWeek:weekKuecheCount(p),kuecheToday:p.kuecheDate===todayStr(),kuechePending:p.kuechePending,schwacheThemen:E.topWeak(p,5),topicStats:st,letzteFehler:p.mistakes.slice(-10),roundsLast7:p.rounds.filter(function(r){var d=new Date();d.setDate(d.getDate()-7);return r.d>=fmt(d);}).length};})};}
 function renderPapa(){var box=$("papaProfiles");box.innerHTML="<h2>Profile ↔ Küche</h2>";state.profiles.forEach(function(p,idx){var w=document.createElement("div");w.className="card";w.style.marginTop="10px";
- w.innerHTML='<div class="field"><label>Name</label><input type="text" class="pname" maxlength="20"></div><div class="field"><label>Klasse</label><select class="pklasse"><option value="2">Klasse 2 (+ / − bis 20)</option><option value="4">Klasse 4–5 (Einmaleins, ÷, bis 1000)</option></select></div><div class="field"><label>Küchen-Kind</label><select class="pkit"><option value="">— nicht verknüpft —</option></select></div><div class="field pproz"><label><input type="checkbox" class="pprozent" style="width:28px;height:28px;vertical-align:middle"> Prozent freischalten (nur Kl. 4/5)</label></div><p class="muted">Punkte: <span class="ppoints"></span> · Serie: <span class="pstreak"></span> · Küche heute: <span class="pkueche"></span></p><h2>Schwache Themen</h2><ul class="pweak muted"></ul><div class="row"><button type="button" class="secondary psave">Profil speichern</button><button type="button" class="warn preset">Schwache Themen zurücksetzen</button></div>';
- var sel=w.querySelector(".pkit");KIDS.forEach(function(k){var o=document.createElement("option");o.value=k.id;o.textContent=k.name;sel.appendChild(o);});w.querySelector(".pname").value=p.name;w.querySelector(".pklasse").value=p.klasse<=2?"2":"4";w.querySelector(".pkit").value=p.kitchenId||"";w.querySelector(".pprozent").checked=!!p.prozent;w.querySelector(".pproz").style.display=p.klasse<=2?"none":"";
+ w.innerHTML='<div class="field"><label>Name</label><input type="text" class="pname" maxlength="20"></div><div class="field"><label>Klasse</label><select class="pklasse"><option value="2">Klasse 2 (ZR 100, Einmaleins-Start)</option><option value="4">Klasse 4–5 (Einmaleins, ÷, bis 1000)</option></select></div><div class="field"><label>Küchen-Kind <strong style="color:#c0392b">(Pflicht für Küchen-Bildschirm!)</strong></label><select class="pkit"><option value="">— nicht verknüpft —</option></select></div><div class="field pproz"><label><input type="checkbox" class="pprozent" style="width:28px;height:28px;vertical-align:middle"> Prozent freischalten (nur Kl. 4/5)</label></div><p class="banner pnolink" style="background:#fdecea;color:#c0392b">⚠️ Nicht verknüpft: ohne Küchen-Kind kommt KEIN Punkt auf den Küchen-Bildschirm.</p><p class="muted">Punkte: <span class="ppoints"></span> · Serie: <span class="pstreak"></span> · Küche heute: <span class="pkueche"></span></p><h2>Schwache Themen</h2><ul class="pweak muted"></ul><div class="row"><button type="button" class="secondary psave">Profil speichern</button><button type="button" class="warn preset">Schwache Themen zurücksetzen</button></div>';
+ var sel=w.querySelector(".pkit");KIDS.forEach(function(k){var o=document.createElement("option");o.value=k.id;o.textContent=k.name;sel.appendChild(o);});w.querySelector(".pname").value=p.name;w.querySelector(".pklasse").value=p.klasse<=2?"2":"4";w.querySelector(".pkit").value=p.kitchenId||"";w.querySelector(".pnolink").style.display=p.kitchenId?"none":"";w.querySelector(".pprozent").checked=!!p.prozent;w.querySelector(".pproz").style.display=p.klasse<=2?"none":"";
  w.querySelector(".ppoints").textContent=p.points;w.querySelector(".pstreak").textContent=p.streak;w.querySelector(".pkueche").textContent=p.kuecheDate===todayStr()?(p.kuechePending?"wartet":"✓"):"offen";
  var ul=w.querySelector(".pweak"),tw=E.topWeak(p,6);if(!tw.length)ul.innerHTML="<li>Keine – prima!</li>";tw.forEach(function(x){var li=document.createElement("li"),s=p.topicStats[x.id]||{seen:0,wrong:0};li.textContent=x.name+" · Gewicht "+x.weight+" · "+s.wrong+" Fehler / "+s.seen;ul.appendChild(li);});
  w.querySelector(".preset").addEventListener("click",function(){if(!confirm("Schwache Themen von "+p.name+" zurücksetzen?"))return;p.weakTopics={};p.mistakes=[];save();renderPapa();});
@@ -279,7 +332,7 @@ function bind(){
  $("btnAgain").onclick=startRound;$("btnToHub").onclick=function(){renderHub();show("screen-hub");setHeader("MatheBase",getProfile(activeId).name);};
  $("btnSwitch").onclick=function(){activeId=null;renderProfiles();show("screen-profiles");setHeader("MatheBase","");};
  $("btnPapaFromStart").onclick=function(){openPin("profiles");};$("btnPapaFromHub").onclick=function(){openPin("hub");};
- $("btnPinCancel").onclick=goBackFromPapa;$("btnPapaDone").onclick=goBackFromPapa;$("btnFlush").onclick=flushPending;
+ $("btnPinCancel").onclick=goBackFromPapa;$("btnPapaDone").onclick=goBackFromPapa;$("btnFlush").onclick=flushPending;$("btnPingKueche").onclick=pingKueche;
  $("btnExport").onclick=function(){var txt=JSON.stringify(exportData(),null,2);$("exportBox").textContent=txt;try{var a=document.createElement("a");a.href="data:application/json;charset=utf-8,"+encodeURIComponent(txt);a.download="mathebase-export-"+todayStr()+".json";document.body.appendChild(a);a.click();a.remove();}catch(e){}};
  $("btnResetDay").onclick=function(){if(!confirm("Punkte von heute zurücksetzen?"))return;var t=todayStr();state.profiles.forEach(function(p){p.todayPoints=0;p.todayDate=t;p.roundsToday=0;});save();renderPapa();};
  $("btnResetAll").onclick=function(){if(!confirm("Wirklich ALLES löschen?")||!confirm("Letzte Bestätigung?"))return;["mathebase.v3","mathebase.v2","mathebase.v1"].forEach(function(k){localStorage.removeItem(k);});state=null;load();activeId=null;renderProfiles();show("screen-profiles");setHeader("MatheBase","");};

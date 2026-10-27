@@ -1,0 +1,35 @@
+NOTA (Claude, estacion-chicos): en este Chromebook NO hace falta nada de lo de abajo.
+  - Actualizar:  sudo estacion-update   (el servidor server/server.py arranca solo con el sistema)
+  - Nombres, PIN y webhook de la cocina:  sudo estacion-config   (se guardan en /etc/estacion, fuera de Git)
+
+MateBase v4 (más difícil) — cómo actualizar la Chromebook (usuario chicos)
+
+1) Copiá mathebase-v4-harder-2026-10-27.tar.gz a "Archivos de Linux" de la Chromebook.
+2) Abrí la Terminal (Linux) y pegá:
+
+   cd ~ && mkdir -p estacion && tar -xzf mathebase-v4-harder-2026-10-27.tar.gz -C estacion
+   # si ya tenés el repo clonado (github.com/sruizliard/estacion-chicos), en vez del tar:
+   #   cd ~/estacion-chicos && git pull   (y usá esa carpeta abajo)
+
+3) Configurá el webhook de la cocina (una sola vez, NO va a Git):
+   mkdir -p ~/.config/estacion && nano ~/.config/estacion/webhook.env
+   pegá estas 2 líneas con los valores de la automatización "mathebase-cocina"
+   (Grok Bot → barra lateral → Automations → mathebase-cocina → Webhook):
+     MATHEBASE_WEBHOOK_URL=...
+     MATHEBASE_WEBHOOK_KEY=...
+   chmod 600 ~/.config/estacion/webhook.env
+
+4) Reiniciá el servidor:
+   pkill -f "server.py" ; cd ~/estacion/web/mathebase && nohup python3 server.py >/tmp/estacion.log 2>&1 &
+   (o como lo arranques hoy; ojo: tiene que ser server.py, no "python3 -m http.server")
+
+5) Abrí http://localhost:8765/ (Ctrl+Shift+R para recargar sin caché).
+   Papa/Mamá (PIN) → en CADA perfil elegí "Küchen-Kind" (juan / matthias) → Profil speichern.
+   Si no está elegido, aparece un aviso rojo y NO llega nada a la cocina.
+
+6) Probar sin marcar hábitos: Papa → "Test Küche (Ping)".
+   ✅ = llega al webhook. ❌ te dice qué falta.
+   Por terminal: curl -s -XPOST localhost:8765/api/mathe/kueche -d '{"action":"ping"}'
+   Si quedaron puntos de hoy sin mandar: Papa → "Ausstehende Küchenpunkte senden".
+
+Los puntajes y perfiles se conservan (se migran solos al esquema 4).

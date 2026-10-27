@@ -177,6 +177,11 @@ class Handler(SimpleHTTPRequestHandler):
             return self._json(200, {"ok": ok})
 
         if route in ("/api/mathe/kueche", "/mathebase/api/mathe/kueche"):
+            if body.get("action") == "ping":  # v4: Test Küche, setzt kein Häkchen
+                ev = {"action": "ping", "source": "mathebase",
+                      "date": str(body.get("date") or date.today().isoformat())[:10]}
+                ok, detail = forward_webhook(ev)
+                return self._json(200, {"ok": True, "forwarded": ok, "detail": detail})
             ids = {k["id"] for k in load_config()["kinder"]}
             kind = body.get("kind")
             if kind not in ids:
