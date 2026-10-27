@@ -35,7 +35,7 @@
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
-    min-height: 170px;
+    min-height: 140px;
     padding: 20px;
     border-radius: 22px;
     text-decoration: none;
@@ -54,10 +54,12 @@
   .anton   { background: #3bb273; }
   .antolin { background: #7b4fbf; }
   .sofa    { background: #f0a202; color: #2b2a33; }
+  .snap    { background: #d6336c; }
+  .wide    { grid-column: span 3; min-height: 110px; }
   footer { margin-top: 28px; font-size: 16px; color: var(--muted); }
   @media (max-width: 700px) {
     .grid { grid-template-columns: 1fr; }
-    .big { grid-column: auto; }
+    .big, .wide { grid-column: auto; }
   }
 </style>
 </head>
@@ -91,9 +93,14 @@
       <span class="name">sofatutor</span>
       <span class="what">Lernvideos und Übungen</span>
     </a>
+    <a class="tile snap wide" href="/snap/snap.html#lang:de&editMode">
+      <span class="icon">🧩</span>
+      <span class="name">Snap! – Programmieren</span>
+      <span class="what">Eigene Spiele und Geschichten mit Blöcken bauen</span>
+    </a>
   </main>
 
-  <footer>GCompris, Tux Paint und Thonny findest du auf dem Desktop.</footer>
+  <footer>Weitere Lernprogramme findest du auf dem Desktop.</footer>
 
 <script>
   var h = new Date().getHours();

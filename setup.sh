@@ -48,10 +48,41 @@ DEBIAN_FRONTEND=noninteractive apt-get install -y -qq \
   gcompris-qt tuxpaint thonny python3 git fonts-noto-color-emoji >/dev/null
 ok "GCompris, Tux Paint, Thonny"
 
+# Programas extra: se instalan uno a uno; si alguno no existe en Debian, se salta
+EXTRA_PKGS="tuxmath tuxtype klettres ktouch kbruch kgeography firefox-esr-l10n-de locales"
+for pkg in $EXTRA_PKGS; do
+  if DEBIAN_FRONTEND=noninteractive apt-get install -y -qq "$pkg" >/dev/null 2>&1; then
+    ok "$pkg"
+  else
+    warn "$pkg no disponible en esta versión de Debian (se omite)"
+  fi
+done
+
+# Snap! (programación con bloques, tipo Scratch) servido en local, sin internet
+SNAP_VER="v12.3.7"
+SNAP_DIR="$BASE/snap"
+if [ "$(cat "$SNAP_DIR/.version" 2>/dev/null)" != "$SNAP_VER" ]; then
+  info "Descargando Snap! $SNAP_VER (unos 180 MB, solo la primera vez)"
+  rm -rf "$SNAP_DIR.tmp"
+  if git clone -q --depth 1 --branch "$SNAP_VER" https://github.com/jmoenig/Snap "$SNAP_DIR.tmp"; then
+    rm -rf "$SNAP_DIR.tmp/.git" "$SNAP_DIR"
+    mv "$SNAP_DIR.tmp" "$SNAP_DIR"
+    echo "$SNAP_VER" > "$SNAP_DIR/.version"
+    chmod -R a+rX "$SNAP_DIR"
+    ok "Snap! $SNAP_VER"
+  else
+    rm -rf "$SNAP_DIR.tmp"
+    warn "No se pudo descargar Snap! (¿hay internet?). Se reintentará en el próximo estacion-update"
+  fi
+else
+  ok "Snap! $SNAP_VER"
+fi
+
 # ---------------------------------------------------------------- 3. Página de inicio local
 info "Página de inicio y MatheBase (servidor local en 127.0.0.1:$PORT)"
 rm -rf "$WEB"
 cp -a "$REPO/web" "$WEB"
+[ -d "$BASE/snap" ] && ln -sfn "$BASE/snap" "$WEB/snap"
 chmod -R a+rX "$WEB"
 
 cat > /etc/systemd/system/estacion-web.service <<EOF
@@ -111,6 +142,9 @@ add_launcher() {   # $1 = patrón del .desktop del programa
 add_launcher gcompris
 add_launcher tuxpaint
 add_launcher thonny
+for app in tuxmath tuxtype klettres ktouch kbruch kgeography; do
+  dpkg -s "$app" >/dev/null 2>&1 && add_launcher "$app"
+done
 
 cat > "$DESK/lernen.desktop" <<EOF
 [Desktop Entry]
@@ -152,9 +186,17 @@ cat > "$XFCONF/keyboard-layout.xml" <<'EOF'
 </channel>
 EOF
 
+# Todo en alemán para los chicos (el admin sigue en inglés)
+sed -i 's/^# *de_DE.UTF-8 UTF-8/de_DE.UTF-8 UTF-8/' /etc/locale.gen 2>/dev/null || true
+grep -q '^de_DE.UTF-8 UTF-8' /etc/locale.gen 2>/dev/null || echo 'de_DE.UTF-8 UTF-8' >> /etc/locale.gen
+locale-gen >/dev/null 2>&1 || true
+printf 'export LANG=de_DE.UTF-8\nexport LANGUAGE=de_DE:de\n' > "$KIDHOME/.xsessionrc"
+chown "$KIDUSER:$KIDUSER" "$KIDHOME/.xsessionrc"
+
 chown -R "$KIDUSER:$KIDUSER" "$KIDHOME/Desktop" "$KIDHOME/.config"
 ok "Bloqueo de pantalla desactivado para '$KIDUSER'"
 ok "Teclado alemán para '$KIDUSER' (se aplica al volver a entrar)"
+ok "Idioma alemán para '$KIDUSER' (se aplica al volver a entrar)"
 
 # ---------------------------------------------------------------- 6. Comando de actualización
 cat > /usr/local/bin/estacion-update <<EOF
