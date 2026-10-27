@@ -217,11 +217,32 @@ cat > "$XFCONF/keyboard-layout.xml" <<'EOF'
 EOF
 
 # Todo en alemán para los chicos (el admin sigue en inglés)
-sed -i 's/^# *de_DE.UTF-8 UTF-8/de_DE.UTF-8 UTF-8/' /etc/locale.gen 2>/dev/null || true
-grep -q '^de_DE.UTF-8 UTF-8' /etc/locale.gen 2>/dev/null || echo 'de_DE.UTF-8 UTF-8' >> /etc/locale.gen
-locale-gen >/dev/null 2>&1 || true
-printf 'export LANG=de_DE.UTF-8\nexport LANGUAGE=de_DE:de\n' > "$KIDHOME/.xsessionrc"
-chown "$KIDUSER:$KIDUSER" "$KIDHOME/.xsessionrc"
+touch /etc/locale.gen
+sed -i 's/^# *de_DE.UTF-8 UTF-8/de_DE.UTF-8 UTF-8/' /etc/locale.gen
+grep -q '^de_DE.UTF-8 UTF-8' /etc/locale.gen || echo 'de_DE.UTF-8 UTF-8' >> /etc/locale.gen
+locale-gen >/dev/null 2>&1 || localedef -i de_DE -f UTF-8 de_DE.UTF-8 >/dev/null 2>&1 || true
+if locale -a 2>/dev/null | grep -qi '^de_DE\.utf-\?8$'; then
+  ok "Idioma alemán (de_DE.UTF-8) disponible"
+else
+  warn "No se pudo generar el idioma alemán (de_DE.UTF-8)"
+fi
+# El idioma se fija por tres vías, porque cada parte del arranque lee una distinta
+LANGLINES='export LANG=de_DE.UTF-8\nexport LANGUAGE=de_DE:de\nexport LC_ALL=de_DE.UTF-8\n'
+printf "$LANGLINES" > "$KIDHOME/.xsessionrc"
+printf "$LANGLINES" > "$KIDHOME/.xprofile"
+printf '[Desktop]\nLanguage=de_DE.UTF-8\n' > "$KIDHOME/.dmrc"
+chmod 644 "$KIDHOME/.dmrc"
+chown "$KIDUSER:$KIDUSER" "$KIDHOME/.xsessionrc" "$KIDHOME/.xprofile" "$KIDHOME/.dmrc"
+AS="/var/lib/AccountsService/users/$KIDUSER"
+if [ -d /var/lib/AccountsService/users ]; then
+  if [ -f "$AS" ] && grep -q '^Language=' "$AS"; then
+    sed -i 's/^Language=.*/Language=de_DE.UTF-8/' "$AS"
+  elif [ -f "$AS" ]; then
+    sed -i '/^\[User\]/a Language=de_DE.UTF-8' "$AS"
+  else
+    printf '[User]\nLanguage=de_DE.UTF-8\n' > "$AS"
+  fi
+fi
 
 chown -R "$KIDUSER:$KIDUSER" "$KIDHOME/Desktop" "$KIDHOME/.config"
 ok "Bloqueo de pantalla desactivado para '$KIDUSER'"
