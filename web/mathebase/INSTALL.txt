@@ -24,7 +24,7 @@ MateBase v4 (más difícil) — cómo actualizar la Chromebook (usuario chicos)
    (o como lo arranques hoy; ojo: tiene que ser server.py, no "python3 -m http.server")
 
 5) Abrí http://localhost:8765/ (Ctrl+Shift+R para recargar sin caché).
-   Papa/Mamá (PIN) → en CADA perfil elegí "Küchen-Kind" (juan / matthias) → Profil speichern.
+   Papa/Mamá (PIN) → en CADA perfil elegí "Küchen-Kind" (las IDs de cocina configuradas) → Profil speichern.
    Si no está elegido, aparece un aviso rojo y NO llega nada a la cocina.
 
 6) Probar sin marcar hábitos: Papa → "Test Küche (Ping)".
