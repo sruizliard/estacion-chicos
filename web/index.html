@@ -56,10 +56,18 @@
   .sofa    { background: #f0a202; color: #2b2a33; }
   .snap    { background: #d6336c; }
   .wide    { grid-column: span 3; min-height: 110px; }
+  h2 { font-size: 26px; margin: 34px 0 14px; width: 100%; max-width: 1040px; }
+  .more { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; width: 100%; max-width: 1040px; }
+  a.chip { display: flex; align-items: center; gap: 10px; padding: 14px 16px; border-radius: 16px;
+           background: #fff; color: var(--ink); text-decoration: none; font-size: 19px; font-weight: bold;
+           box-shadow: 0 4px 0 rgba(0,0,0,.10); border: 2px solid #eadfca; }
+  a.chip:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(0,0,0,.10); }
+  a.chip span { font-size: 28px; }
   footer { margin-top: 28px; font-size: 16px; color: var(--muted); }
   @media (max-width: 700px) {
     .grid { grid-template-columns: 1fr; }
     .big, .wide { grid-column: auto; }
+    .more { grid-template-columns: 1fr 1fr; }
   }
 </style>
 </head>
@@ -100,7 +108,21 @@
     </a>
   </main>
 
-  <footer>Weitere Lernprogramme findest du auf dem Desktop.</footer>
+  <h2>Mehr entdecken</h2>
+  <nav class="more">
+    <a class="chip" href="https://blockly.games/?lang=de"><span>🧱</span>Blockly Games</a>
+    <a class="chip" href="https://grundschulwiki.zum.de/"><span>📘</span>Grundschulwiki</a>
+    <a class="chip" href="https://www.wdrmaus.de/"><span>🐭</span>Die Maus</a>
+    <a class="chip" href="https://www.kindernetz.de/"><span>🌍</span>Kindernetz</a>
+    <a class="chip" href="https://www.zdf.de/kinder/logo"><span>📰</span>logo!</a>
+    <a class="chip" href="https://www.news4kids.de/"><span>🗞️</span>News4Kids</a>
+    <a class="chip" href="https://kinder.wdr.de/tv/wissen-macht-ah/"><span>💡</span>Wissen macht Ah!</a>
+    <a class="chip" href="https://www.planet-schule.de/"><span>🎧</span>Planet Schule</a>
+    <a class="chip" href="https://www.esa.int/kids/de/home"><span>🚀</span>ESA Kids</a>
+    <a class="chip" href="https://www.internet-abc.de/kinder/"><span>🛡️</span>Internet-ABC</a>
+  </nav>
+
+  <footer>Noch mehr Programme: in den Ordnern auf dem Desktop.</footer>
 
 <script>
   var h = new Date().getHours();

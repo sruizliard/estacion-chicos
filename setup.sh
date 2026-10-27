@@ -49,7 +49,11 @@ DEBIAN_FRONTEND=noninteractive apt-get install -y -qq \
 ok "GCompris, Tux Paint, Thonny"
 
 # Programas extra: se instalan uno a uno; si alguno no existe en Debian, se salta
-EXTRA_PKGS="tuxmath tuxtype klettres ktouch kbruch kgeography firefox-esr-l10n-de locales"
+EXTRA_PKGS="firefox-esr-l10n-de locales \
+  tuxmath tuxtype klettres ktouch kbruch kgeography \
+  kturtle gbrainy kig eduactiv8 pysiogame gtans xaos khangman kanagram kwordquiz marble \
+  pencil2d mypaint hydrogen pianobooster \
+  pingus numptyphysics frozen-bubble hex-a-hop lbreakout2 ri-li gnome-chess 2048-qt"
 for pkg in $EXTRA_PKGS; do
   if DEBIAN_FRONTEND=noninteractive apt-get install -y -qq "$pkg" >/dev/null 2>&1; then
     ok "$pkg"
@@ -129,36 +133,62 @@ info "Escritorio de los chicos"
 DESK="$KIDHOME/Desktop"
 mkdir -p "$DESK"
 
-add_launcher() {   # $1 = patrón del .desktop del programa
-  local f
-  f="$(ls /usr/share/applications/ 2>/dev/null | grep -i "$1" | grep -v -i config | grep '\.desktop$' | head -n1)"
-  if [ -n "$f" ]; then
-    cp "/usr/share/applications/$f" "$DESK/"
-    ok "Icono: $f"
-  else
-    warn "No encontré el icono de $1"
-  fi
-}
-add_launcher gcompris
-add_launcher tuxpaint
-add_launcher thonny
-for app in tuxmath tuxtype klettres ktouch kbruch kgeography; do
-  dpkg -s "$app" >/dev/null 2>&1 && add_launcher "$app"
+# Iconos ordenados en carpetas; se regeneran en cada update
+rm -f "$DESK"/*.desktop
+for d in "Lernen & Üben" "Malen & Musik" "Spiele" "Programmieren"; do
+  rm -rf "$DESK/$d"; mkdir -p "$DESK/$d"
 done
+
+add_launcher() {   # $1 = carpeta, $2 = patrón del .desktop del programa
+  local f
+  for f in $(ls /usr/share/applications/ 2>/dev/null | grep -i "$2" | grep -v -i config | grep '\.desktop$'); do
+    grep -qi '^NoDisplay=true' "/usr/share/applications/$f" && continue
+    cp "/usr/share/applications/$f" "$DESK/$1/"
+    return 0
+  done
+  return 1
+}
+
+N=0
+for spec in \
+  "Lernen & Üben:gcompris" "Lernen & Üben:tuxmath" "Lernen & Üben:tuxtype" "Lernen & Üben:ktouch" \
+  "Lernen & Üben:klettres" "Lernen & Üben:kbruch" "Lernen & Üben:kgeography" "Lernen & Üben:gbrainy" \
+  "Lernen & Üben:kig" "Lernen & Üben:eduactiv8" "Lernen & Üben:pysiogame" "Lernen & Üben:gtans" \
+  "Lernen & Üben:xaos" "Lernen & Üben:khangman" "Lernen & Üben:kanagram" "Lernen & Üben:kwordquiz" \
+  "Lernen & Üben:marble" \
+  "Malen & Musik:tuxpaint" "Malen & Musik:pencil2d" "Malen & Musik:mypaint" "Malen & Musik:hydrogen" \
+  "Malen & Musik:pianobooster" \
+  "Spiele:pingus" "Spiele:numptyphysics" "Spiele:frozen-bubble" "Spiele:hex-a-hop" "Spiele:lbreakout2" \
+  "Spiele:ri-li" "Spiele:chess" "Spiele:2048" \
+  "Programmieren:thonny" "Programmieren:kturtle"; do
+  add_launcher "${spec%%:*}" "${spec#*:}" && N=$((N+1))
+done
+ok "$N programas en las carpetas del escritorio"
 
 cat > "$DESK/lernen.desktop" <<EOF
 [Desktop Entry]
 Type=Application
 Name=Lernen
-Comment=MatheBase, Klexikon, ANTON, Antolin, sofatutor
+Comment=MatheBase, Snap!, Klexikon, ANTON, Antolin und mehr
 Exec=firefox-esr http://127.0.0.1:$PORT/
 Icon=firefox-esr
 Terminal=false
 EOF
 ok "Icono: Lernen (página de inicio)"
 
-rm -f "$DESK"/*config*.desktop
-chmod +x "$DESK"/*.desktop
+find "$DESK" -name '*.desktop' -exec chmod +x {} +
+
+# Marcar los iconos como seguros al entrar (sin la pregunta "Untrusted launcher")
+cat > /usr/local/bin/estacion-trust-launchers <<'EOF'
+#!/bin/bash
+find "$HOME/Desktop" -name '*.desktop' | while read -r f; do
+  gio set -t string "$f" metadata::xfce-exe-checksum "$(sha256sum "$f" | cut -d' ' -f1)" 2>/dev/null
+done
+EOF
+chmod +x /usr/local/bin/estacion-trust-launchers
+mkdir -p "$KIDHOME/.config/autostart"
+printf '[Desktop Entry]\nType=Application\nName=Estacion Launcher\nExec=/usr/local/bin/estacion-trust-launchers\nNoDisplay=true\n' \
+  > "$KIDHOME/.config/autostart/estacion-trust.desktop"
 
 # Sin bloqueo de pantalla para los chicos (la pantalla sí se apaga para ahorrar)
 XFCONF="$KIDHOME/.config/xfce4/xfconf/xfce-perchannel-xml"

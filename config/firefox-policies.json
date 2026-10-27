@@ -1,13 +1,24 @@
 {
   "policies": {
     "WebsiteFilter": {
-      "Block": ["<all_urls>"],
+      "Block": [
+        "<all_urls>"
+      ],
       "Exceptions": [
         "http://127.0.0.1/*",
         "https://*.zum.de/*",
         "https://*.anton.app/*",
         "https://*.westermann.de/*",
-        "https://*.sofatutor.com/*"
+        "https://*.sofatutor.com/*",
+        "https://*.blockly.games/*",
+        "https://*.news4kids.de/*",
+        "https://www.zdf.de/kinder/*",
+        "https://*.wdrmaus.de/*",
+        "https://kinder.wdr.de/*",
+        "https://*.kindernetz.de/*",
+        "https://*.planet-schule.de/*",
+        "https://www.esa.int/kids/*",
+        "https://*.internet-abc.de/*"
       ]
     },
     "Homepage": {
